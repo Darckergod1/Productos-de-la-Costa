@@ -1,0 +1,3579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F7EDE2">
+<title>Mi Negocio – POS</title>
+
+<style>
+/* ── Offline-safe font stack ── */
+</style>
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════════════ */
+:root {
+  --cream-50:  #FDFAF5;
+  --cream-100: #F7EDE2;
+  --cream-200: #EDD9C4;
+  --cream-300: #E0C4A8;
+  --sand:      #C8A882;
+  --bark:      #7A5C42;
+  --bark-dark: #3D2B1A;
+  --rose:      #D4607A;
+  --rose-light:#F2A3B3;
+  --rose-pale: #FAE8ED;
+  --teal:      #3D8C8C;
+  --teal-light:#A8D5D5;
+  --teal-pale: #E6F4F4;
+  --amber:     #C87820;
+  --amber-pale:#FDF0DC;
+  --green:     #3D8C5A;
+  --green-pale:#E2F4EA;
+  --muted:     #9E8878;
+  --dark:      #2A1A0E;
+  --white:     #FFFFFF;
+  --shadow-sm: 0 1px 4px rgba(42,26,14,.08);
+  --shadow-md: 0 4px 16px rgba(42,26,14,.10);
+  --shadow-lg: 0 12px 40px rgba(42,26,14,.14);
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --font-display: 'Georgia', 'Palatino Linotype', 'Book Antiqua', serif;
+  --font-body:    'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream-100);
+  color: var(--dark);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+}
+input, button, select, textarea {
+  font-family: var(--font-body);
+  font-size: inherit;
+}
+button { cursor: pointer; border: none; }
+input, textarea { border: none; outline: none; }
+
+/* ═══════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════ */
+.app-header {
+  background: var(--cream-50);
+  border-bottom: 1.5px solid var(--cream-200);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-brand .brand-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--rose), var(--amber));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  color: var(--white);
+  font-weight: 700;
+}
+.header-brand .brand-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--bark-dark);
+  letter-spacing: .3px;
+}
+.header-brand .brand-sub {
+  font-size: .72rem;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: .4px;
+}
+.offline-pill {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  background: var(--amber-pale);
+  color: var(--amber);
+  border: 1px solid #E8C97A;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: .72rem;
+  font-weight: 600;
+}
+.offline-pill.show { display: flex; }
+.offline-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+
+/* ═══════════════════════════════════════════════════════
+   NAV TABS
+═══════════════════════════════════════════════════════ */
+.nav-bar {
+  background: var(--cream-50);
+  border-bottom: 1.5px solid var(--cream-200);
+  padding: 0 20px;
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+}
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: none;
+  border-bottom: 2.5px solid transparent;
+  white-space: nowrap;
+  transition: color .2s, border-color .2s;
+  position: relative;
+  letter-spacing: .2px;
+}
+.nav-tab.active {
+  color: var(--rose);
+  border-bottom-color: var(--rose);
+}
+.nav-tab:hover:not(.active) { color: var(--bark); }
+.nav-badge {
+  background: var(--rose);
+  color: var(--white);
+  font-size: .65rem;
+  font-weight: 700;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 9px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+.nav-badge.show { display: flex; }
+
+/* ═══════════════════════════════════════════════════════
+   PANELS
+═══════════════════════════════════════════════════════ */
+.panel { display: none; }
+.panel.active { display: block; }
+.panel-inner { max-width: 1200px; margin: 0 auto; padding: 22px 20px; }
+
+/* ═══════════════════════════════════════════════════════
+   POS LAYOUT
+═══════════════════════════════════════════════════════ */
+#panel-pos .panel-inner {
+  display: grid;
+  grid-template-columns: 1fr 330px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  #panel-pos .panel-inner { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   CARD BASE
+═══════════════════════════════════════════════════════ */
+.card {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--cream-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--bark-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .ct-icon {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem;
+}
+.ct-rose   { background: var(--rose-pale);  color: var(--rose); }
+.ct-teal   { background: var(--teal-pale);  color: var(--teal); }
+.ct-amber  { background: var(--amber-pale); color: var(--amber); }
+.ct-green  { background: var(--green-pale); color: var(--green); }
+
+/* ═══════════════════════════════════════════════════════
+   PRODUCT GRID – Collapsible categories
+═══════════════════════════════════════════════════════ */
+.products-section { flex: 1; }
+.cat-block { margin-bottom: 10px; }
+
+/* ── Category header (trigger) ── */
+.cat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  user-select: none;
+  transition: background .18s, border-color .18s;
+  gap: 10px;
+}
+.cat-header:hover { background: var(--cream-100); border-color: var(--cream-300); }
+.cat-header.open  { border-radius: var(--r-md) var(--r-md) 0 0; border-bottom-color: transparent; background: var(--cream-100); }
+
+.cat-header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.cat-name {
+  font-size: .75rem; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--bark);
+}
+/* Badge: items seleccionados en esta categoría */
+.cat-badge {
+  background: var(--teal); color: var(--white);
+  font-size: .65rem; font-weight: 700;
+  min-width: 18px; height: 18px; border-radius: 9px;
+  display: none; align-items: center; justify-content: center; padding: 0 5px;
+}
+.cat-badge.show { display: flex; }
+
+/* Chevron */
+.cat-chevron { font-size: .7rem; color: var(--muted); transition: transform .22s ease; flex-shrink: 0; }
+.cat-header.open .cat-chevron { transform: rotate(180deg); }
+
+/* ── Collapsible body ── */
+.cat-body {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height .28s ease;
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-top: none;
+  border-radius: 0 0 var(--r-md) var(--r-md);
+}
+.cat-body.open { max-height: 1400px; padding: 12px; }
+.prod-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.prod-card {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color .18s, box-shadow .18s, transform .15s;
+  position: relative;
+}
+.prod-card:hover { border-color: var(--cream-300); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.prod-card.selected {
+  border-color: var(--teal);
+  background: var(--teal-pale);
+  box-shadow: 0 0 0 3px rgba(61,140,140,.12);
+}
+.prod-name { font-size: .82rem; font-weight: 600; color: var(--dark); line-height: 1.3; }
+.prod-price { font-family: var(--font-display); font-size: .95rem; color: var(--rose); }
+.qty-controls { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.qty-btn {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  font-size: .9rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.qty-btn.minus { background: var(--cream-200); color: var(--bark); }
+.qty-btn.plus  { background: var(--teal-pale); color: var(--teal); }
+.qty-btn:hover { filter: brightness(.93); }
+.qty-inp {
+  width: 36px;
+  text-align: center;
+  font-weight: 700;
+  font-size: .88rem;
+  background: var(--white);
+  border: 1.5px solid var(--cream-200);
+  border-radius: 6px;
+  padding: 3px 0;
+  color: var(--dark);
+}
+.qty-inp:focus { border-color: var(--teal); }
+
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════════ */
+.sidebar { position: sticky; top: 116px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Client field */
+.client-wrap { padding: 14px 16px; }
+.field-label {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: block;
+}
+.text-input {
+  width: 100%;
+  background: var(--cream-100);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  font-size: .88rem;
+  font-weight: 500;
+  color: var(--dark);
+  transition: border-color .2s;
+}
+.text-input:focus { border-color: var(--teal); background: var(--white); }
+.text-input::placeholder { color: var(--sand); }
+
+/* Order list */
+.order-list-wrap { padding: 0 16px 14px; }
+.order-empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: .82rem;
+  padding: 20px 0;
+}
+.order-table { width: 100%; border-collapse: collapse; }
+.order-table th {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 0 8px;
+  text-align: left;
+}
+.order-table th:last-child { text-align: right; }
+.order-table td {
+  padding: 5px 0;
+  font-size: .82rem;
+  border-bottom: 1px solid var(--cream-200);
+  vertical-align: middle;
+}
+.order-table td:last-child { text-align: right; font-weight: 600; }
+.rm-btn {
+  background: none;
+  color: var(--rose-light);
+  font-size: .85rem;
+  padding: 0 4px;
+  transition: color .15s;
+}
+.rm-btn:hover { color: var(--rose); }
+.total-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 0 0;
+  margin-top: 4px;
+}
+.total-label-txt { font-weight: 700; font-size: .88rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+.total-amount-txt { font-family: var(--font-display); font-size: 1.7rem; color: var(--rose); }
+
+/* Buttons */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 16px;
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  font-size: .84rem;
+  letter-spacing: .2px;
+  transition: filter .15s, transform .1s, box-shadow .15s;
+}
+.btn:active { transform: scale(.98); }
+.btn:hover  { filter: brightness(.95); }
+.btn:disabled { opacity: .38; cursor: not-allowed; }
+.btn-primary { background: var(--rose); color: var(--white); box-shadow: 0 2px 8px rgba(212,96,122,.25); }
+.btn-secondary { background: var(--cream-200); color: var(--bark); }
+.btn-teal { background: var(--teal); color: var(--white); box-shadow: 0 2px 8px rgba(61,140,140,.22); }
+.btn-amber { background: var(--amber); color: var(--white); box-shadow: 0 2px 8px rgba(200,120,32,.22); }
+.btn-green { background: var(--green); color: var(--white); box-shadow: 0 2px 8px rgba(61,140,90,.22); }
+.btn-ghost { background: none; color: var(--muted); border: 1.5px solid var(--cream-200); }
+.btn-sm { padding: 7px 12px; font-size: .78rem; border-radius: 7px; }
+.btn-block { width: 100%; }
+
+.action-row { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+/* ═══════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════ */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(42,26,14,.42);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--cream-50);
+  border-radius: var(--r-lg);
+  max-width: 440px; width: 100%;
+  max-height: 92vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: popUp .22s ease;
+}
+@keyframes popUp { from { transform: scale(.92) translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-head {
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--cream-200);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--bark-dark); }
+.modal-close {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--cream-200);
+  color: var(--muted);
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.modal-close:hover { background: var(--cream-300); color: var(--dark); }
+.modal-body { padding: 18px 22px; }
+.modal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--cream-200);
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+
+/* ── Ticket inside modal ── */
+.ticket-wrap { font-family: var(--font-body); }
+.tkt-header { text-align: center; padding-bottom: 14px; }
+.tkt-shop { font-family: var(--font-display); font-size: 1.5rem; color: var(--bark-dark); line-height: 1.2; }
+.tkt-tagline { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+.tkt-divider { border: none; border-top: 1.5px dashed var(--cream-300); margin: 12px 0; }
+.tkt-meta { font-size: .78rem; color: var(--muted); line-height: 1.8; }
+.tkt-meta b { color: var(--dark); }
+.tkt-client { font-size: .85rem; color: var(--teal); font-weight: 600; margin-top: 4px; }
+.tkt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }
+.tkt-table th { font-size: .68rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); padding-bottom: 6px; border-bottom: 1px solid var(--cream-200); text-align: left; }
+.tkt-table th:last-child { text-align: right; }
+.tkt-table td { padding: 5px 2px; font-size: .82rem; border-bottom: 1px dotted var(--cream-200); }
+.tkt-table td:last-child { text-align: right; font-weight: 600; }
+.tkt-table td:nth-child(2) { text-align: center; color: var(--muted); font-size: .78rem; }
+.tkt-total { display: flex; justify-content: space-between; align-items: baseline; background: var(--rose-pale); border-radius: 10px; padding: 10px 14px; margin-top: 10px; }
+.tkt-total-lbl { font-weight: 700; font-size: .88rem; color: var(--bark); }
+.tkt-total-amt { font-family: var(--font-display); font-size: 1.6rem; color: var(--rose); }
+.tkt-thanks { text-align: center; margin-top: 16px; font-size: .78rem; color: var(--muted); line-height: 1.7; }
+
+/* ═══════════════════════════════════════════════════════
+   ACOMODADOR
+═══════════════════════════════════════════════════════ */
+.stats-row { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.stat-card {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md);
+  padding: 12px 18px;
+  display: flex; align-items: center; gap: 10px;
+  flex: 1; min-width: 100px;
+}
+.stat-num { font-family: var(--font-display); font-size: 1.8rem; line-height: 1; }
+.stat-lbl { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+.sn-pending { color: var(--amber); }
+.sn-done    { color: var(--green); }
+.sn-total   { color: var(--teal); }
+
+.queue-list { display: flex; flex-direction: column; gap: 12px; }
+.queue-card {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border-left: 5px solid var(--teal);
+  box-shadow: var(--shadow-sm);
+  transition: opacity .3s, border-color .3s;
+}
+.queue-card.done { border-left-color: var(--green); opacity: .5; }
+.qc-head {
+  padding: 12px 16px;
+  background: var(--teal-pale);
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  border-bottom: 1px solid var(--teal-light);
+}
+.queue-card.done .qc-head { background: var(--green-pale); border-bottom-color: #A8D5B8; }
+.qc-folio { font-family: var(--font-display); font-size: 1rem; color: var(--teal); }
+.queue-card.done .qc-folio { color: var(--green); }
+.qc-client { font-size: .8rem; font-weight: 600; color: var(--bark); }
+.qc-time { font-size: .74rem; color: var(--muted); margin-left: auto; }
+.qc-total { font-family: var(--font-display); font-size: 1rem; color: var(--rose); }
+.qc-body { padding: 12px 16px; }
+.qc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.qc-chip {
+  background: var(--cream-100);
+  border: 1px solid var(--cream-200);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: .78rem;
+  font-weight: 600;
+  display: flex; align-items: center; gap: 5px;
+  color: var(--dark);
+}
+.qc-chip .chip-qty {
+  background: var(--teal);
+  color: var(--white);
+  font-size: .72rem;
+  font-weight: 700;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.qc-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--cream-200);
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+.queue-empty-state { text-align: center; padding: 52px 20px; color: var(--muted); font-size: .9rem; }
+.queue-empty-state span { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+
+/* ═══════════════════════════════════════════════════════
+   HISTORIAL
+═══════════════════════════════════════════════════════ */
+.hist-toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.hist-filter {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--dark);
+  outline: none;
+}
+.hist-filter:focus { border-color: var(--teal); }
+.hist-summary {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex; gap: 24px; flex-wrap: wrap;
+}
+.hs-item { display: flex; flex-direction: column; gap: 2px; }
+.hs-lbl { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+.hs-val { font-family: var(--font-display); font-size: 1.3rem; color: var(--bark-dark); }
+.hist-table-wrap { overflow-x: auto; }
+.hist-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.hist-table th {
+  text-align: left; font-size: .7rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--muted); padding: 0 10px 10px 0; border-bottom: 1.5px solid var(--cream-200);
+}
+.hist-table td { padding: 10px 10px 10px 0; border-bottom: 1px solid var(--cream-100); vertical-align: middle; }
+.hist-table tr:hover td { background: var(--cream-100); }
+.hist-badge {
+  font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  background: var(--green-pale); color: var(--green); display: inline-block;
+}
+.hist-empty { text-align: center; padding: 40px; color: var(--muted); font-size: .88rem; }
+.hist-detail-btn {
+  background: none; color: var(--teal); font-size: .78rem; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 2px; padding: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ADMIN (precios + configuración)
+═══════════════════════════════════════════════════════ */
+.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .admin-grid { grid-template-columns: 1fr; } }
+.admin-section-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--bark-dark);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1.5px solid var(--cream-200);
+  display: flex; align-items: center; gap: 8px;
+}
+.price-list { display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; padding-right: 4px; }
+.price-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  background: var(--cream-100);
+  border: 1px solid var(--cream-200);
+  border-radius: var(--r-sm);
+}
+.price-row:hover { background: var(--white); }
+.pr-name { flex: 1; font-size: .82rem; font-weight: 500; color: var(--dark); }
+.pr-cat { font-size: .68rem; color: var(--muted); margin-top: 1px; }
+.price-inp {
+  width: 70px;
+  background: var(--white);
+  border: 1.5px solid var(--cream-200);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-weight: 700;
+  font-size: .85rem;
+  text-align: right;
+  color: var(--rose);
+}
+.price-inp:focus { border-color: var(--teal); }
+.del-prod-btn {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: var(--rose-pale);
+  color: var(--rose);
+  font-size: .8rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.del-prod-btn:hover { background: var(--rose); color: var(--white); }
+
+.new-product-form { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.form-row { display: flex; gap: 8px; }
+.form-row .text-input { flex: 1; }
+.form-row .price-inp-form {
+  width: 80px;
+  background: var(--cream-100);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-sm);
+  padding: 9px 10px;
+  font-weight: 700;
+  font-size: .88rem;
+  text-align: right;
+  color: var(--rose);
+  outline: none;
+}
+.form-row .price-inp-form:focus { border-color: var(--teal); background: var(--white); }
+
+/* Config items */
+.config-item { margin-bottom: 16px; }
+.config-note { font-size: .74rem; color: var(--muted); margin-top: 4px; }
+
+/* Promo tag on product card */
+.promo-tag {
+  position: absolute; top: -6px; right: -6px;
+  background: var(--amber);
+  color: var(--white);
+  font-size: .6rem; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px;
+  letter-spacing: .5px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CLIENTES
+═══════════════════════════════════════════════════════ */
+.clients-toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.clients-search {
+  flex: 1; min-width: 180px;
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  font-size: .88rem; color: var(--dark);
+  outline: none;
+}
+.clients-search:focus { border-color: var(--teal); }
+
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.client-card {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 8px;
+  transition: border-color .18s, box-shadow .18s;
+}
+.client-card:hover { border-color: var(--teal-light); box-shadow: var(--shadow-md); }
+.cc-name { font-family: var(--font-display); font-size: 1rem; color: var(--bark-dark); }
+.cc-phone { font-size: .8rem; color: var(--teal); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.cc-phone-none { font-size: .78rem; color: var(--muted); }
+.cc-stats { display: flex; gap: 12px; font-size: .76rem; color: var(--muted); }
+.cc-stats b { color: var(--dark); font-weight: 700; }
+.cc-last { font-size: .74rem; color: var(--muted); border-top: 1px solid var(--cream-200); padding-top: 7px; }
+.cc-last-items { color: var(--bark); font-size: .76rem; font-weight: 500; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+
+/* Autocomplete dropdown */
+.autocomplete-wrap { position: relative; }
+.autocomplete-list {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
+  background: var(--white);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-md);
+  max-height: 200px; overflow-y: auto;
+  margin-top: 3px;
+}
+.autocomplete-item {
+  padding: 9px 12px; cursor: pointer;
+  font-size: .85rem; color: var(--dark);
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--cream-100);
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover { background: var(--teal-pale); }
+.ac-phone { font-size: .75rem; color: var(--teal); }
+
+/* New client form modal */
+.form-group { margin-bottom: 14px; }
+
+/* ═══════════════════════════════════════════════════════
+   PRINT
+═══════════════════════════════════════════════════════ */
+@media print {
+  body * { visibility: hidden !important; }
+  #print-area, #print-area * { visibility: visible !important; }
+  #print-area {
+    position: fixed !important; inset: 0 !important;
+    display: flex !important; justify-content: center !important;
+    padding: 10px !important; background: #fff !important;
+  }
+  .ticket-wrap { max-width: 360px; width: 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed; bottom: 20px; right: 20px;
+  z-index: 1000;
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bark-dark);
+  color: var(--cream-100);
+  padding: 10px 16px;
+  border-radius: var(--r-sm);
+  font-size: .82rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn .25s ease;
+  pointer-events: auto;
+}
+.toast.success { background: var(--green); }
+.toast.warn    { background: var(--amber); }
+.toast.err     { background: var(--rose); }
+
+/* ── QR modal render area ── */
+#qr-code-render img,
+#qr-code-render canvas {
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+}
+
+@keyframes toastIn { from { transform: translateX(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ═══════════════════════════════════════════════════════
+   AUTH — Pantalla de login + badge de rol
+═══════════════════════════════════════════════════════ */
+#auth-screen {
+  position: fixed; inset: 0; z-index: 2000;
+  background: var(--cream-100);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.auth-box {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 36px 32px;
+  max-width: 340px; width: 100%;
+  text-align: center;
+}
+.auth-icon { font-size: 2.8rem; margin-bottom: 8px; }
+.auth-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem; color: var(--bark-dark);
+  margin-bottom: 4px;
+}
+.auth-sub { font-size: .8rem; color: var(--muted); margin-bottom: 24px; }
+.auth-role-tabs {
+  display: flex; gap: 8px; margin-bottom: 20px;
+}
+.auth-role-btn {
+  flex: 1; padding: 10px; border-radius: var(--r-sm);
+  font-weight: 700; font-size: .82rem;
+  border: 1.5px solid var(--cream-200);
+  background: var(--cream-100); color: var(--muted);
+  cursor: pointer; transition: all .18s;
+}
+.auth-role-btn.active {
+  border-color: var(--rose); background: var(--rose-pale); color: var(--rose);
+}
+.pin-display {
+  display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;
+}
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--cream-300); background: transparent;
+  transition: background .15s, border-color .15s;
+}
+.pin-dot.filled { background: var(--rose); border-color: var(--rose); }
+.pin-pad {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  max-width: 240px; margin: 0 auto 16px;
+}
+.pin-key {
+  padding: 14px; border-radius: var(--r-sm);
+  font-size: 1.1rem; font-weight: 700;
+  background: var(--cream-100); border: 1.5px solid var(--cream-200);
+  color: var(--dark); cursor: pointer;
+  transition: background .12s, transform .1s;
+}
+.pin-key:hover  { background: var(--cream-200); }
+.pin-key:active { transform: scale(.94); background: var(--cream-300); }
+.pin-key.del    { color: var(--rose); }
+.pin-key.enter  { background: var(--rose); color: white; border-color: var(--rose); }
+.pin-key.enter:hover { filter: brightness(.92); }
+.auth-error {
+  color: var(--rose); font-size: .8rem; font-weight: 600;
+  min-height: 20px; margin-bottom: 8px;
+}
+/* Vendedor mode: no pin required */
+.auth-vendor-btn {
+  width: 100%; padding: 11px;
+  background: var(--teal-pale); color: var(--teal);
+  border: 1.5px solid var(--teal-light);
+  border-radius: var(--r-sm); font-weight: 700; font-size: .85rem;
+  cursor: pointer; transition: filter .15s;
+  margin-top: 8px;
+}
+.auth-vendor-btn:hover { filter: brightness(.93); }
+
+/* Role badge in header */
+.role-badge {
+  font-size: .68rem; font-weight: 700; padding: 3px 9px;
+  border-radius: 20px; letter-spacing: .5px;
+}
+.role-badge.admin  { background: var(--rose-pale);  color: var(--rose);  }
+.role-badge.vendor { background: var(--teal-pale);  color: var(--teal);  }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.logout-btn {
+  background: none; border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-sm); padding: 4px 10px;
+  font-size: .72rem; font-weight: 600; color: var(--muted);
+  cursor: pointer; transition: border-color .15s, color .15s;
+}
+.logout-btn:hover { border-color: var(--rose); color: var(--rose); }
+
+/* Admin-only elements hidden from vendor */
+.admin-only { display: none; }
+body.role-admin .admin-only { display: block; }
+body.role-admin .nav-tab.admin-only { display: flex; }
+
+/* ═══════════════════════════════════════════════════════
+   PRODUCCIÓN CSS
+═══════════════════════════════════════════════════════ */
+.prod-toolbar {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  align-items: center; margin-bottom: 18px;
+}
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px; margin-bottom: 24px;
+}
+.stock-card {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md); padding: 14px;
+  display: flex; flex-direction: column; gap: 6px;
+  position: relative; overflow: hidden;
+}
+.stock-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px; background: var(--green);
+  border-radius: 4px 0 0 4px;
+}
+.stock-card.low::before  { background: var(--amber); }
+.stock-card.zero::before { background: var(--rose);  }
+.sc-name { font-weight: 700; font-size: .88rem; color: var(--dark); }
+.sc-size { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+.sc-stock {
+  font-family: var(--font-display); font-size: 1.6rem; color: var(--green);
+  line-height: 1;
+}
+.stock-card.low  .sc-stock { color: var(--amber); }
+.stock-card.zero .sc-stock { color: var(--rose);  }
+.sc-label { font-size: .7rem; color: var(--muted); }
+.sc-actions { display: flex; gap: 6px; margin-top: 4px; }
+
+/* Lote form */
+.lote-form {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-lg); padding: 18px;
+  margin-bottom: 20px;
+}
+.lote-form-title {
+  font-family: var(--font-display); font-size: 1rem;
+  color: var(--bark-dark); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.lote-items { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.lote-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--cream-100); border-radius: var(--r-sm); padding: 8px 12px;
+}
+.lote-row-name { flex: 1; font-size: .85rem; font-weight: 600; color: var(--dark); }
+.lote-row-size { font-size: .72rem; color: var(--muted); min-width: 50px; }
+.lote-qty-inp {
+  width: 70px; text-align: center;
+  background: var(--white); border: 1.5px solid var(--cream-200);
+  border-radius: 6px; padding: 5px 8px;
+  font-weight: 700; font-size: .88rem; color: var(--dark); outline: none;
+}
+.lote-qty-inp:focus { border-color: var(--teal); }
+
+/* Historial de lotes */
+.lote-history { display: flex; flex-direction: column; gap: 8px; }
+.lote-card {
+  background: var(--cream-50);
+  border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md); padding: 12px 16px;
+}
+.lote-card-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px; flex-wrap: wrap; gap: 6px;
+}
+.lote-id { font-family: var(--font-display); font-size: .9rem; color: var(--bark); }
+.lote-date { font-size: .76rem; color: var(--muted); }
+.lote-items-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.lote-chip {
+  background: var(--green-pale); color: var(--green);
+  font-size: .76rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RUTAS CSS
+═══════════════════════════════════════════════════════ */
+.ruta-status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--cream-50); border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md); padding: 14px 18px; margin-bottom: 18px;
+  flex-wrap: wrap; gap: 10px;
+}
+.ruta-status-active { color: var(--green); font-weight: 700; font-size: .88rem; }
+.ruta-status-none   { color: var(--muted); font-size: .88rem; }
+.ruta-inv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px; margin-bottom: 16px;
+}
+.ruta-inv-row {
+  background: var(--cream-100); border-radius: var(--r-sm);
+  padding: 10px 12px; display: flex; justify-content: space-between;
+  align-items: center;
+}
+.ri-name { font-size: .82rem; font-weight: 600; }
+.ri-qty  { font-family: var(--font-display); font-size: 1.2rem; color: var(--teal); }
+.ri-sold { font-size: .72rem; color: var(--muted); }
+.client-visit-list { display: flex; flex-direction: column; gap: 8px; }
+.visit-card {
+  background: var(--cream-50); border: 1.5px solid var(--cream-200);
+  border-radius: var(--r-md); padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.visit-card.visited { border-left: 4px solid var(--green); }
+.visit-card.pending { border-left: 4px solid var(--cream-300); }
+.vc-name { font-weight: 700; font-size: .88rem; flex: 1; }
+.vc-addr { font-size: .74rem; color: var(--muted); }
+.vc-status-visited { color: var(--green); font-size: .75rem; font-weight: 700; }
+.vc-status-pending { color: var(--muted); font-size: .75rem; }
+
+/* QR scanner overlay */
+.qr-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  background: rgba(0,0,0,.88);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+}
+.qr-overlay.open { display: flex; }
+.qr-viewport {
+  width: 280px; height: 280px;
+  border: 3px solid var(--teal);
+  border-radius: var(--r-lg); overflow: hidden; position: relative;
+}
+#qr-video { width: 100%; height: 100%; object-fit: cover; }
+.qr-corner {
+  position: absolute; width: 24px; height: 24px;
+  border-color: white; border-style: solid; border-width: 0;
+}
+.qr-corner.tl { top: 8px; left: 8px; border-top-width: 3px; border-left-width: 3px; border-radius: 4px 0 0 0; }
+.qr-corner.tr { top: 8px; right: 8px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 4px 0 0; }
+.qr-corner.bl { bottom: 8px; left: 8px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 4px; }
+.qr-corner.br { bottom: 8px; right: 8px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 4px 0; }
+.qr-scan-line {
+  position: absolute; left: 10%; right: 10%; height: 2px;
+  background: var(--teal); box-shadow: 0 0 8px var(--teal);
+  animation: scanLine 2s linear infinite;
+}
+@keyframes scanLine {
+  0%   { top: 10%; }
+  100% { top: 90%; }
+}
+.qr-label { color: white; font-size: .88rem; font-weight: 600; }
+.qr-close-btn {
+  background: white; color: var(--dark);
+  border: none; border-radius: var(--r-sm);
+  padding: 10px 24px; font-weight: 700; cursor: pointer;
+}
+
+/* GPS pin indicator on ticket */
+.gps-meta-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .72rem; color: var(--muted);
+  background: var(--cream-100); border-radius: 4px;
+  padding: 2px 7px; margin-top: 4px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+
+<!-- ══ AUTH SCREEN ══ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-icon">🏪</div>
+    <div class="auth-title" id="auth-shop-title">Mi Negocio</div>
+    <div class="auth-sub">Ingresa tu PIN para continuar</div>
+
+    <div class="auth-role-tabs">
+      <button class="auth-role-btn active" id="role-btn-admin" onclick="selectAuthRole('admin')">👑 Admin</button>
+      <button class="auth-role-btn" id="role-btn-vendor" onclick="selectAuthRole('vendor')">🛒 Vendedor</button>
+    </div>
+
+    <div id="auth-pin-section">
+      <div class="pin-display" id="pin-display">
+        <div class="pin-dot" id="pd-0"></div>
+        <div class="pin-dot" id="pd-1"></div>
+        <div class="pin-dot" id="pd-2"></div>
+        <div class="pin-dot" id="pd-3"></div>
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key del" onclick="pinDel()">⌫</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key enter" onclick="pinEnter()">✓</button>
+      </div>
+    </div>
+
+    <div id="auth-vendor-section" style="display:none">
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">
+        Acceso directo sin PIN para vendedor en ruta.
+      </p>
+      <button class="auth-vendor-btn" onclick="loginVendor()">Entrar como Vendedor →</button>
+    </div>
+  </div>
+</div>
+
+<header class="app-header">
+  <div class="header-brand">
+    <div class="brand-icon">🏪</div>
+    <div>
+      <div class="brand-name" id="shop-name-display">Mi Negocio</div>
+      <div class="brand-sub">Sistema de Venta</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="offline-pill" id="offline-pill">
+      <div class="offline-dot"></div> Sin conexión
+    </div>
+    <span class="role-badge" id="role-badge"></span>
+    <button class="logout-btn" onclick="logout()">Salir</button>
+  </div>
+</header>
+
+<!-- ══ NAV ══ -->
+<nav class="nav-bar">
+  <button class="nav-tab active" onclick="goTab('pos')">🧾 Venta</button>
+  <button class="nav-tab" onclick="goTab('acomodador')" id="tab-acomo">
+    📦 Acomodador
+    <span class="nav-badge" id="badge-acomo">0</span>
+  </button>
+  <button class="nav-tab" onclick="goTab('historial')">📊 Historial</button>
+  <button class="nav-tab" onclick="goTab('clientes')">👥 Clientes</button>
+  <button class="nav-tab admin-only" onclick="goTab('produccion')">🏭 Producción</button>
+  <button class="nav-tab admin-only" onclick="goTab('rutas')">🗺️ Rutas</button>
+  <button class="nav-tab admin-only" onclick="goTab('admin')">⚙️ Administrar</button>
+</nav>
+
+<!-- ════════════════════════════════════════════
+     PANEL: VENTA (POS)
+════════════════════════════════════════════ -->
+<section class="panel active" id="panel-pos">
+  <div class="panel-inner">
+
+    <!-- Products -->
+    <div class="products-section">
+      <div id="products-container"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Client -->
+      <div class="card">
+        <div class="client-wrap">
+          <label class="field-label" for="client-input">👤 Cliente (requerido)</label>
+          <div class="autocomplete-wrap">
+            <input class="text-input" id="client-input" type="text"
+                   placeholder="Nombre del cliente…" maxlength="60" autocomplete="off"
+                   oninput="onClientInput()" onblur="hideAC()">
+            <div class="autocomplete-list" id="ac-list" style="display:none"></div>
+          </div>
+          <div style="margin-top:8px;">
+            <label class="field-label" for="client-phone">📱 Teléfono WhatsApp (opcional)</label>
+            <input class="text-input" id="client-phone" type="tel"
+                   placeholder="527771234567" maxlength="20" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <!-- Order summary -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="ct-icon ct-teal">🛒</span> Pedido
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="clearOrder()">Limpiar</button>
+        </div>
+        <div class="order-list-wrap">
+          <div id="order-body"><p class="order-empty">Sin productos aún.</p></div>
+          <div class="total-bar">
+            <span class="total-label-txt">Total</span>
+            <span class="total-amount-txt" id="total-display">$0</span>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary btn-block" id="btn-ticket" onclick="openTicketModal()" disabled>
+            🎫 Generar ticket
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     PANEL: ACOMODADOR
+════════════════════════════════════════════ -->
+<section class="panel" id="panel-acomodador">
+  <div class="panel-inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+      <div>
+        <h2 style="font-family:var(--font-display);font-size:1.3rem;color:var(--bark-dark);">Cola de pedidos</h2>
+        <p style="font-size:.8rem;color:var(--muted);margin-top:3px;">Los tickets aparecen aquí en tiempo real. Márcalos conforme los atiendes.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="clearDone()">🧹 Limpiar completados</button>
+    </div>
+    <div class="stats-row" id="queue-stats"></div>
+    <div class="queue-list" id="queue-list"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     PANEL: HISTORIAL
+════════════════════════════════════════════ -->
+<section class="panel" id="panel-historial">
+  <div class="panel-inner">
+    <h2 style="font-family:var(--font-display);font-size:1.3rem;color:var(--bark-dark);margin-bottom:16px;">Historial de ventas</h2>
+
+    <div class="hist-toolbar">
+      <select class="hist-filter" id="hist-period-type" onchange="renderHistorial()">
+        <option value="all">Todo</option>
+        <option value="day">Por día</option>
+        <option value="week">Por semana</option>
+        <option value="month" selected>Por mes</option>
+        <option value="year">Por año</option>
+      </select>
+      <select class="hist-filter" id="hist-period-value" onchange="renderHistorial()">
+        <option value="">— Selecciona —</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="exportHistorialTXT()">📝 Exportar .txt</button>
+      <button class="btn btn-ghost btn-sm" onclick="purgeOldData()">🗑️ Purgar +3 meses</button>
+    </div>
+
+    <div class="hist-summary" id="hist-summary"></div>
+
+    <div class="hist-table-wrap">
+      <table class="hist-table">
+        <thead>
+          <tr>
+            <th>Folio</th><th>Fecha</th><th>Hora</th><th>Cliente</th>
+            <th>Productos</th><th>Total</th><th></th><th></th>
+          </tr>
+        </thead>
+        <tbody id="hist-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     PANEL: CLIENTES
+════════════════════════════════════════════ -->
+<section class="panel" id="panel-clientes">
+  <div class="panel-inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+      <div>
+        <h2 style="font-family:var(--font-display);font-size:1.3rem;color:var(--bark-dark);">Directorio de clientes</h2>
+        <p style="font-size:.8rem;color:var(--muted);margin-top:3px;">Se actualiza automáticamente con cada ticket generado.</p>
+      </div>
+      <button class="btn btn-teal btn-sm" onclick="openNewClientModal()">➕ Nuevo cliente</button>
+    </div>
+    <div class="clients-toolbar">
+      <input class="clients-search" id="clients-search" type="text"
+             placeholder="Buscar por nombre o teléfono…" oninput="renderClients()">
+    </div>
+    <div class="clients-grid" id="clients-grid"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     PANEL: ADMIN
+════════════════════════════════════════════ -->
+<section class="panel" id="panel-admin">
+  <div class="panel-inner">
+    <div class="admin-grid">
+
+      <!-- Precios y productos -->
+      <div>
+        <div class="admin-section-title">💰 Productos y precios</div>
+        <div class="price-list" id="price-list"></div>
+        <div style="margin-top:14px;">
+          <button class="btn btn-teal btn-sm btn-block" onclick="savePrices()">✓ Guardar cambios de precio</button>
+        </div>
+
+        <div style="margin-top:24px;">
+          <div class="admin-section-title">➕ Nuevo producto</div>
+          <div class="new-product-form">
+            <div class="form-row">
+              <input class="text-input" id="np-name" placeholder="Nombre del producto" style="flex:2">
+              <input class="price-inp-form" id="np-price" type="number" min="1" placeholder="$">
+            </div>
+            <div class="form-row">
+              <input class="text-input" id="np-cat" placeholder="Categoría (ej: Bebidas, Postres…)" style="flex:2">
+              <input class="text-input" id="np-promo" placeholder="Promo (opcional)" style="flex:1">
+            </div>
+            <button class="btn btn-amber btn-sm" onclick="addProduct()">➕ Agregar producto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuración -->
+      <div>
+        <div class="admin-section-title">🏪 Configuración del negocio</div>
+
+        <div class="config-item">
+          <label class="field-label">Nombre de la tienda</label>
+          <input class="text-input" id="cfg-shop-name" placeholder="Nombre del negocio">
+          <p class="config-note">Aparece en el encabezado y en los tickets.</p>
+        </div>
+
+        <div class="config-item">
+          <label class="field-label">Slogan / tagline</label>
+          <input class="text-input" id="cfg-tagline" placeholder="Slogan del negocio">
+        </div>
+
+        <div class="config-item">
+          <label class="field-label">📱 Número WhatsApp (con lada, sin +)</label>
+          <input class="text-input" id="cfg-wsp" placeholder="527771234567" type="tel">
+          <p class="config-note">Los tickets se enviarán a este número como aviso.</p>
+        </div>
+
+        <div style="margin-top:8px;">
+          <button class="btn btn-primary btn-sm" onclick="saveConfig()">✓ Guardar configuración</button>
+        </div>
+
+        <div style="margin-top:24px;">
+          <div class="admin-section-title">🔐 Seguridad</div>
+          <div class="form-group">
+            <label class="field-label">Nuevo PIN de administrador (4 dígitos)</label>
+            <input class="text-input" id="pin-new" type="password" maxlength="4"
+                   placeholder="••••" inputmode="numeric" style="letter-spacing:6px">
+          </div>
+          <div class="form-group">
+            <label class="field-label">Confirmar PIN</label>
+            <input class="text-input" id="pin-confirm" type="password" maxlength="4"
+                   placeholder="••••" inputmode="numeric" style="letter-spacing:6px">
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="saveAdminPin()">✓ Actualizar PIN</button>
+        </div>
+
+        <div style="margin-top:24px;">
+          <div class="admin-section-title">🔧 Datos y mantenimiento</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="exportAllData()">💾 Exportar base de datos (.json)</button>
+            <button class="btn btn-ghost btn-sm" onclick="showStorageInfo()">📦 Ver uso de almacenamiento</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     PANEL: PRODUCCIÓN (admin only)
+════════════════════════════════════════════ -->
+<section class="panel" id="panel-produccion">
+  <div class="panel-inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+      <div>
+        <h2 style="font-family:var(--font-display);font-size:1.3rem;color:var(--bark-dark);">🏭 Producción e Inventario</h2>
+        <p style="font-size:.8rem;color:var(--muted);margin-top:3px;">Registra lotes producidos. El stock se actualiza automáticamente al vender.</p>
+      </div>
+    </div>
+
+    <!-- Stock actual -->
+    <div class="admin-section-title" style="margin-bottom:12px;">📦 Stock actual</div>
+    <div class="stock-grid" id="stock-grid"></div>
+
+    <!-- Registrar lote -->
+    <div class="lote-form">
+      <div class="lote-form-title">➕ Registrar lote de producción</div>
+      <div class="lote-items" id="lote-items-form"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-green btn-sm" onclick="saveLote()">✓ Guardar lote</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearLoteForm()">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- Historial de lotes -->
+    <div class="admin-section-title" style="margin-bottom:12px;">📋 Historial de lotes</div>
+    <div class="lote-history" id="lote-history"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     PANEL: RUTAS (admin only)
+════════════════════════════════════════════ -->
+<section class="panel" id="panel-rutas">
+  <div class="panel-inner">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+      <div>
+        <h2 style="font-family:var(--font-display);font-size:1.3rem;color:var(--bark-dark);">🗺️ Rutas de distribución</h2>
+        <p style="font-size:.8rem;color:var(--muted);margin-top:3px;">Prepara el inventario de salida, asigna clientes y monitorea avance en tiempo real.</p>
+      </div>
+    </div>
+
+    <!-- Estado ruta activa -->
+    <div class="ruta-status-bar" id="ruta-status-bar">
+      <span class="ruta-status-none" id="ruta-status-txt">Sin ruta activa hoy.</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-teal btn-sm" id="btn-nueva-ruta" onclick="openNuevaRuta()">➕ Nueva ruta</button>
+        <button class="btn btn-amber btn-sm" id="btn-cerrar-ruta" style="display:none" onclick="cerrarRuta()">🔒 Cerrar ruta</button>
+      </div>
+    </div>
+
+    <!-- Inventario en ruta -->
+    <div id="ruta-inv-section" style="display:none">
+      <div class="admin-section-title" style="margin-bottom:10px;">📦 Inventario en ruta</div>
+      <div class="ruta-inv-grid" id="ruta-inv-grid"></div>
+
+      <div class="admin-section-title" style="margin:16px 0 10px;">👥 Clientes asignados</div>
+      <div class="client-visit-list" id="ruta-client-list"></div>
+    </div>
+
+    <!-- Historial rutas -->
+    <div style="margin-top:24px;">
+      <div class="admin-section-title" style="margin-bottom:12px;">📋 Rutas anteriores</div>
+      <div id="rutas-history"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     NUEVA RUTA MODAL
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-nueva-ruta">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-head">
+      <span class="modal-title">Preparar nueva ruta</span>
+      <button class="modal-close" onclick="closeModal('modal-nueva-ruta')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="field-label">Vendedor</label>
+        <input class="text-input" id="nr-vendedor" placeholder="Nombre del vendedor">
+      </div>
+      <div class="form-group">
+        <label class="field-label">📦 Inventario de salida</label>
+        <div id="nr-inv-form"></div>
+      </div>
+      <div class="form-group">
+        <label class="field-label">👥 Clientes en esta ruta</label>
+        <div id="nr-clients-form" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-teal btn-sm" onclick="iniciarRuta()">🚀 Iniciar ruta</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-nueva-ruta')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     QR SCANNER OVERLAY
+════════════════════════════════════════════ -->
+<div class="qr-overlay" id="qr-overlay">
+  <div class="qr-viewport">
+    <video id="qr-video" playsinline autoplay muted></video>
+    <div class="qr-scan-line"></div>
+    <div class="qr-corner tl"></div>
+    <div class="qr-corner tr"></div>
+    <div class="qr-corner bl"></div>
+    <div class="qr-corner br"></div>
+  </div>
+  <div class="qr-label">Apunta al código QR del cliente</div>
+  <button class="qr-close-btn" onclick="closeQR()">Cerrar</button>
+</div>
+
+
+<!-- ══ QR CLIENTE MODAL ══ -->
+<div class="modal-overlay" id="modal-client-qr">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-head">
+      <span class="modal-title" id="qr-modal-title">QR del cliente</span>
+      <button class="modal-close" onclick="closeModal('modal-client-qr')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <div id="qr-code-render" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+      <div id="qr-client-info" style="font-size:.82rem;color:var(--muted);line-height:1.7;"></div>
+      <div id="qr-code-string"
+           style="font-family:monospace;font-size:.7rem;background:var(--cream-100);
+                  border-radius:6px;padding:6px 10px;margin-top:10px;
+                  word-break:break-all;color:var(--bark);">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-amber btn-sm" onclick="printClientQRSheet()">🖨️ Imprimir hoja QR</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-client-qr')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NEW CLIENT MODAL ══ -->
+<div class="modal-overlay" id="modal-new-client">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="new-client-modal-title">Nuevo cliente</span>
+      <button class="modal-close" onclick="closeModal('modal-new-client')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="field-label">Nombre *</label>
+        <input class="text-input" id="nc-name" type="text" placeholder="Nombre completo" maxlength="60">
+      </div>
+      <div class="form-group">
+        <label class="field-label">📱 Teléfono WhatsApp (con lada, sin +)</label>
+        <input class="text-input" id="nc-phone" type="tel" placeholder="527771234567" maxlength="20">
+      </div>
+      <div class="form-group">
+        <label class="field-label">Nota (opcional)</label>
+        <input class="text-input" id="nc-note" type="text" placeholder="Dirección, referencia…" maxlength="80">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-teal btn-sm" onclick="saveNewClient()">✓ Guardar cliente</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-new-client')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CLIENT DETAIL MODAL ══ -->
+<div class="modal-overlay" id="modal-client-detail">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="cd-title">Cliente</span>
+      <button class="modal-close" onclick="closeModal('modal-client-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="cd-body"></div>
+    <div class="modal-footer" id="cd-footer"></div>
+  </div>
+</div>
+
+<!-- ══ TICKET MODAL ══ -->
+<div class="modal-overlay" id="modal-ticket">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">Vista previa del ticket</span>
+      <button class="modal-close" onclick="closeTicketModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="print-area">
+        <div class="ticket-wrap" id="ticket-content"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-sm" onclick="printTicket()">🖨️ Imprimir</button>
+      <button class="btn btn-teal btn-sm" onclick="downloadPDF()">📄 PDF</button>
+      <button class="btn btn-secondary btn-sm" onclick="downloadTXT()">📝 .txt</button>
+      <button class="btn btn-green btn-sm" onclick="sendWhatsApp('business')" title="Enviar al número del negocio">💬 WA Negocio</button>
+      <button class="btn btn-green btn-sm" id="btn-wsp-client" onclick="sendWhatsApp('client')" title="Enviar al teléfono del cliente" style="display:none">💬 WA Cliente</button>
+      <button class="btn btn-amber btn-sm" onclick="closeTicketModal()" title="Confirma el ticket y limpia el pedido">✓ Confirmar y cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HIST DETAIL MODAL ══ -->
+<div class="modal-overlay" id="modal-hist-detail">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="hist-detail-title">Detalle del ticket</span>
+      <button class="modal-close" onclick="closeModal('modal-hist-detail')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ticket-wrap" id="hist-detail-content"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-sm" onclick="printHistDetail()">🖨️ Imprimir</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-hist-detail')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOASTS ══ -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- SW registered at bottom -->
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   TEMPLATE POS — Configuración inicial para nuevo cliente
+   ───────────────────────────────────────────────────────
+   1. Cambia DEFAULT_CONFIG.shopName con el nombre del negocio
+   2. Cambia DEFAULT_CONFIG.tagline con el slogan
+   3. Reemplaza DEFAULT_PRODUCTS con el catálogo real del cliente
+   4. El cliente puede gestionar todo desde Administrar
+   5. Para producción: aloja los archivos en un servidor o
+      entrega como carpeta con sw.js + manifest.json separados
+═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+   STORAGE KEYS
+═══════════════════════════════════════════════════════ */
+const KEY_PRODUCTS  = 'pos_products';
+const KEY_CONFIG    = 'pos_config';
+const KEY_TICKETS   = 'pos_tickets';
+const KEY_COUNTER   = 'pos_counter';
+const KEY_CLIENTS   = 'pos_clients';
+const KEY_LOTES     = 'pos_lotes';      // production batches
+const KEY_RUTAS     = 'pos_rutas';      // delivery routes
+const KEY_AUTH      = 'pos_auth';       // hashed PINs
+
+/* ═══════════════════════════════════════════════════════
+   DEFAULT CATALOGUE
+═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   CATÁLOGO POR DEFECTO
+   Reemplaza estos productos con los del negocio del cliente.
+   Cada producto necesita: id único, name, cat (categoría) y price.
+   El cliente puede modificarlos desde Administrar → Productos y precios.
+═══════════════════════════════════════════════════════ */
+const DEFAULT_PRODUCTS = [
+  { id:'prod_001', name:'Producto 1', cat:'Categoría A', price:100 },
+  { id:'prod_002', name:'Producto 2', cat:'Categoría A', price:150 },
+  { id:'prod_003', name:'Producto 3', cat:'Categoría B', price:200 },
+  { id:'prod_004', name:'Producto 4', cat:'Categoría B', price:250 },
+  { id:'prod_005', name:'Producto 5', cat:'Categoría C', price:50  },
+];
+
+const DEFAULT_CONFIG = {
+  shopName: 'Mi Negocio',
+  tagline:  'Tu negocio de confianza',
+  wsp:      '',
+};
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let products   = loadProducts();
+let config     = loadConfig();
+let tickets    = loadTickets();
+let clients    = loadClients();
+let lotes      = loadLotes();     // production batches
+let rutas      = loadRutas();     // delivery routes
+let activeRuta = rutas.find(r=>r.status==='activa') || null;
+let queue      = [];
+let order      = {};
+let counter    = parseInt(localStorage.getItem(KEY_COUNTER) || '1');
+let pendingTkt = null;
+let histDetailTicket = null;
+let currentRole = null;           // 'admin' | 'vendor'
+let authPinBuffer = '';
+let authSelectedRole = 'admin';
+let qrStream = null;
+let qrAnimFrame = null;
+
+/* ═══════════════════════════════════════════════════════
+   PERSISTENCE
+═══════════════════════════════════════════════════════ */
+function loadClients() {
+  try { return JSON.parse(localStorage.getItem(KEY_CLIENTS) || '[]'); }
+  catch { return []; }
+}
+function saveClients() { localStorage.setItem(KEY_CLIENTS, JSON.stringify(clients)); }
+
+function loadProducts() {
+  try { const d = JSON.parse(localStorage.getItem(KEY_PRODUCTS)); return d && d.length ? d : DEFAULT_PRODUCTS; }
+  catch { return DEFAULT_PRODUCTS; }
+}
+function saveProducts() { localStorage.setItem(KEY_PRODUCTS, JSON.stringify(products)); }
+
+function loadConfig() {
+  try { return Object.assign({}, DEFAULT_CONFIG, JSON.parse(localStorage.getItem(KEY_CONFIG) || '{}')); }
+  catch { return Object.assign({}, DEFAULT_CONFIG); }
+}
+function saveConfigData() { localStorage.setItem(KEY_CONFIG, JSON.stringify(config)); }
+
+function loadTickets() {
+  try { return JSON.parse(localStorage.getItem(KEY_TICKETS) || '[]'); }
+  catch { return []; }
+}
+function saveTickets() { localStorage.setItem(KEY_TICKETS, JSON.stringify(tickets)); }
+
+function saveCounter() { localStorage.setItem(KEY_COUNTER, String(counter)); }
+
+function loadLotes()  { try { return JSON.parse(localStorage.getItem(KEY_LOTES)  || '[]'); } catch { return []; } }
+function saveLotes()  { localStorage.setItem(KEY_LOTES,  JSON.stringify(lotes)); }
+function loadRutas()  { try { return JSON.parse(localStorage.getItem(KEY_RUTAS)  || '[]'); } catch { return []; } }
+function saveRutas()  { localStorage.setItem(KEY_RUTAS,  JSON.stringify(rutas)); }
+function loadAuth()   { try { return JSON.parse(localStorage.getItem(KEY_AUTH)   || '{}'); } catch { return {}; } }
+function saveAuth(d)  { localStorage.setItem(KEY_AUTH,   JSON.stringify(d)); }
+
+/* SHA-256 via Web Crypto (async, returns hex string) */
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   PRODUCTS MAP helper
+═══════════════════════════════════════════════════════ */
+function getProductMap() {
+  const m = {};
+  products.forEach(p => m[p.id] = p);
+  return m;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER PRODUCTS GRID
+═══════════════════════════════════════════════════════ */
+/* Tracks which categories are expanded — persists across renderProducts calls */
+const catOpenState = {};
+
+function renderProducts() {
+  const container = document.getElementById('products-container');
+
+  // Group by category preserving insertion order
+  const cats = {};
+  const catOrder = [];
+  products.forEach(p => {
+    if (!cats[p.cat]) { cats[p.cat] = []; catOrder.push(p.cat); }
+    cats[p.cat].push(p);
+  });
+  const uniqueCats = [...new Set(catOrder)];
+
+  // Default: first category open, rest closed (only on first render)
+  uniqueCats.forEach((cat, i) => {
+    if (catOpenState[cat] === undefined) catOpenState[cat] = (i === 0);
+  });
+
+  container.innerHTML = uniqueCats.map(cat => {
+    const items   = cats[cat];
+    const isOpen  = catOpenState[cat];
+
+    // Count selected items in this category (for badge when collapsed)
+    const selectedCount = items.filter(p => (order[p.id] || 0) > 0).length;
+
+    const cards = items.map(p => {
+      const qty      = order[p.id] || 0;
+      const promoTag = p.promo ? `<span class="promo-tag">${p.promo}</span>` : '';
+      return `<div class="prod-card${qty > 0 ? ' selected' : ''}" id="pc-${p.id}">
+        ${promoTag}
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-price">$${p.price}</div>
+        <div class="qty-controls">
+          <button class="qty-btn minus" onclick="chQty('${p.id}',-1)">−</button>
+          <input class="qty-inp" type="number" min="0" value="${qty}"
+                 id="qi-${p.id}" onchange="setQty('${p.id}',this.value)" oninput="setQty('${p.id}',this.value)">
+          <button class="qty-btn plus" onclick="chQty('${p.id}',1)">+</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    const badgeHTML = selectedCount > 0
+      ? `<span class="cat-badge show">${selectedCount}</span>`
+      : `<span class="cat-badge"></span>`;
+
+    return `<div class="cat-block" id="catblock-${CSS.escape(cat)}">
+      <div class="cat-header${isOpen ? ' open' : ''}" onclick="toggleCat('${cat.replace(/'/g,"\\'")}')">
+        <div class="cat-header-left">
+          <span class="cat-name">${cat}</span>
+          ${badgeHTML}
+        </div>
+        <span class="cat-chevron">▼</span>
+      </div>
+      <div class="cat-body${isOpen ? ' open' : ''}">
+        <div class="prod-grid">${cards}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/**
+ * Toggle a category open/closed.
+ * Updates catOpenState and re-renders only the affected block
+ * (avoids full re-render so qty inputs don't reset).
+ */
+function toggleCat(cat) {
+  catOpenState[cat] = !catOpenState[cat];
+  // Update DOM directly — no full re-render needed
+  document.querySelectorAll('.cat-block').forEach(block => {
+    const header = block.querySelector('.cat-header');
+    const body   = block.querySelector('.cat-body');
+    const name   = block.querySelector('.cat-name');
+    if (!name || name.textContent !== cat) return;
+    const open = catOpenState[cat];
+    header.classList.toggle('open', open);
+    body.classList.toggle('open', open);
+  });
+}
+
+/**
+ * Called after setQtyVal to refresh the badge counter
+ * on the category header without full re-render.
+ */
+function refreshCatBadge(productId) {
+  const p = getProductMap()[productId];
+  if (!p) return;
+  const cat   = p.cat;
+  const block = document.getElementById('catblock-' + CSS.escape(cat));
+  if (!block) return;
+  const items         = products.filter(x => x.cat === cat);
+  const selectedCount = items.filter(x => (order[x.id] || 0) > 0).length;
+  const badge         = block.querySelector('.cat-badge');
+  if (badge) {
+    badge.textContent = selectedCount;
+    badge.classList.toggle('show', selectedCount > 0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ORDER MANAGEMENT
+═══════════════════════════════════════════════════════ */
+function chQty(id, d) { setQtyVal(id, Math.max(0, (order[id]||0)+d)); }
+function setQty(id, v) { setQtyVal(id, Math.max(0, parseInt(v)||0)); }
+function setQtyVal(id, v) {
+  if (v===0) delete order[id]; else order[id]=v;
+  const inp = document.getElementById('qi-'+id);
+  if (inp && parseInt(inp.value)!==v) inp.value = v;
+  const card = document.getElementById('pc-'+id);
+  if (card) card.classList.toggle('selected', v>0);
+  refreshCatBadge(id);   // update selected-items badge on category header
+  refreshSummary();
+}
+function removeItem(id) { setQtyVal(id,0); }
+
+function clearOrder() {
+  Object.keys(order).forEach(id => {
+    delete order[id];
+    const inp = document.getElementById('qi-'+id); if (inp) inp.value=0;
+    const card= document.getElementById('pc-'+id); if (card) card.classList.remove('selected');
+  });
+  refreshSummary();
+}
+
+function refreshSummary() {
+  const body = document.getElementById('order-body');
+  const totEl = document.getElementById('total-display');
+  const btn   = document.getElementById('btn-ticket');
+  const ids = Object.keys(order);
+  if (!ids.length) {
+    body.innerHTML = '<p class="order-empty">Sin productos aún.</p>';
+    totEl.textContent = '$0';
+    btn.disabled = true;
+    return;
+  }
+  const client = (document.getElementById('client-input').value||'').trim();
+  btn.disabled = !client;
+  btn.title = client ? '' : 'Escribe el nombre del cliente para continuar';
+  const pm = getProductMap();
+  let total = 0, rows = '';
+  ids.forEach(id => {
+    const p=pm[id], q=order[id], s=p.price*q; total+=s;
+    rows+=`<tr>
+      <td><button class="rm-btn" onclick="removeItem('${id}')">✕</button> ${p.name}</td>
+      <td style="text-align:center;color:var(--muted)">${q}</td>
+      <td>$${s}</td>
+    </tr>`;
+  });
+  body.innerHTML = `<table class="order-table">
+    <thead><tr><th>Producto</th><th style="text-align:center">Cant</th><th>Sub</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+  totEl.textContent = '$'+total;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TICKET GENERATION
+═══════════════════════════════════════════════════════ */
+function buildTicketData() {
+  const ids = Object.keys(order);
+  if (!ids.length) return null;
+  const now     = new Date();
+  const folio   = 'F-'+String(counter).padStart(4,'0');
+  const dateStr = now.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  const timeStr = now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const isoDate = now.toISOString();
+  const client  = (document.getElementById('client-input').value||'').trim();
+  const pm      = getProductMap();
+  const items   = [];
+  let total=0;
+  ids.forEach(id=>{
+    const p=pm[id],q=order[id],s=p.price*q; total+=s;
+    items.push({id,name:p.name,cat:p.cat,qty:q,price:p.price,sub:s});
+  });
+  return { folio, dateStr, timeStr, isoDate, client, phone: (document.getElementById('client-phone').value||'').trim().replace(/\D/g,''), items, total,
+           shopName:config.shopName, tagline:config.tagline, done:false };
+}
+
+function ticketHTML(t) {
+  const rows = t.items.map(i=>
+    `<tr><td>${i.name}</td><td>${i.qty}</td><td>$${i.price}</td><td>$${i.sub}</td></tr>`
+  ).join('');
+  const clientLine = t.client
+    ? `<div class="tkt-client">👤 ${t.client}</div>`:'';
+  return `<div class="tkt-header">
+    <div style="font-size:2rem;margin-bottom:4px">🏪</div>
+    <div class="tkt-shop">${t.shopName}</div>
+    <div class="tkt-tagline">${t.tagline}</div>
+  </div>
+  <hr class="tkt-divider">
+  <div class="tkt-meta">
+    <b>Fecha:</b> ${t.dateStr}<br>
+    <b>Hora:</b> ${t.timeStr}<br>
+    <b>Folio:</b> ${t.folio}
+    ${clientLine}
+  </div>
+  <hr class="tkt-divider">
+  <table class="tkt-table">
+    <thead><tr><th>Producto</th><th>Cant</th><th>P.U.</th><th>Importe</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <hr class="tkt-divider">
+  <div class="tkt-total">
+    <span class="tkt-total-lbl">TOTAL A PAGAR</span>
+    <span class="tkt-total-amt">$${t.total}</span>
+  </div>
+  <div class="tkt-thanks"><br>
+    <b style="color:var(--bark-dark)">¡Gracias por tu visita!</b><br>
+    Esperamos verte pronto.<br>
+    <small>Conserva este ticket como comprobante de compra.</small>
+  </div>`;
+}
+
+async function openTicketModal() {
+  const t = buildTicketData();
+  if (!t) return;
+  // Capture GPS silently in background — won't block UI
+  const geo = await captureGPS();
+  if (geo) t.geo = geo;
+  pendingTkt = t;
+  document.getElementById('ticket-content').innerHTML = ticketHTML(t);
+  // Show WA client button only if phone captured
+  const btnC = document.getElementById('btn-wsp-client');
+  if (btnC) btnC.style.display = t.phone ? '' : 'none';
+  openModal('modal-ticket');
+}
+
+function confirmTicket() {
+  if (!pendingTkt) return;
+  // Upsert client directory
+  const clientEl = document.getElementById('client-input');
+  const foundClient = clients.find(c => normalName(c.name) === normalName(pendingTkt.client));
+  upsertClient(pendingTkt.client, pendingTkt.phone, pendingTkt.items, pendingTkt.total, pendingTkt.folio);
+  // Link to active ruta if any
+  if (activeRuta) linkTicketToRuta(pendingTkt.folio, foundClient?.id);
+  // Save to persistent DB
+  tickets.push(pendingTkt);
+  saveTickets();
+  // Deduct from stock (derived — just re-render if visible)
+  descontarStock(pendingTkt.items);
+  // Push to acomodador queue
+  queue.push(pendingTkt);
+  counter++;
+  saveCounter();
+  updateBadge();
+  clearOrder();
+  if (clientEl) clientEl.value = '';
+  const phoneEl = document.getElementById('client-phone');
+  if (phoneEl) phoneEl.value = '';
+  pendingTkt = null;
+}
+
+function closeTicketModal() {
+  confirmTicket();          // save + queue + clear order — only happens HERE
+  closeModal('modal-ticket');
+}
+
+// Imprimir: solo imprime, el modal sigue abierto
+function printTicket() {
+  window.print();
+  toast('🖨️ Enviado a impresora');
+}
+
+// PDF: abre ventana aparte, el modal sigue abierto
+function downloadPDF() {
+  if (!pendingTkt) return;
+  const content = document.getElementById('ticket-content').innerHTML;
+  const pdfName = pendingTkt.client ? pendingTkt.client.trim() : pendingTkt.folio;
+  const w = window.open('','_blank','width=480,height=680');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${pdfName} – ${pendingTkt.shopName}</title>
+    <style>
+      :root{--rose:#D4607A;--bark-dark:#3D2B1A;--muted:#9E8878;--teal:#3D8C8C;--cream-200:#EDD9C4;--cream-300:#E0C4A8;--rose-pale:#FAE8ED;}
+      body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;margin:0;padding:24px;background:#fff;max-width:380px;}
+      .tkt-header{text-align:center;padding-bottom:14px}
+      .tkt-shop{font-family:Georgia,'Palatino Linotype',serif;font-size:1.5rem;color:var(--bark-dark)}
+      .tkt-tagline{font-size:.78rem;color:var(--muted);margin-top:2px}
+      .tkt-divider{border:none;border-top:1.5px dashed var(--cream-300);margin:12px 0}
+      .tkt-meta{font-size:.78rem;color:var(--muted);line-height:1.8}
+      .tkt-meta b{color:#2A1A0E}
+      .tkt-client{font-size:.85rem;color:var(--teal);font-weight:600;margin-top:4px}
+      .tkt-table{width:100%;border-collapse:collapse;margin:4px 0}
+      .tkt-table th{font-size:.68rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--cream-200);text-align:left}
+      .tkt-table th:last-child{text-align:right}
+      .tkt-table td{padding:5px 2px;font-size:.82rem;border-bottom:1px dotted var(--cream-200)}
+      .tkt-table td:last-child{text-align:right;font-weight:600}
+      .tkt-table td:nth-child(2){text-align:center;color:var(--muted);font-size:.78rem}
+      .tkt-total{display:flex;justify-content:space-between;align-items:baseline;background:var(--rose-pale);border-radius:10px;padding:10px 14px;margin-top:10px}
+      .tkt-total-lbl{font-weight:700;font-size:.88rem;color:#7A5C42}
+      .tkt-total-amt{font-family:Georgia,serif;font-size:1.6rem;color:var(--rose)}
+      .tkt-thanks{text-align:center;margin-top:16px;font-size:.78rem;color:var(--muted);line-height:1.7}
+      @media print{@page{margin:8mm}}
+    </style></head><body>
+    ${content}
+    <script>window.onload=()=>setTimeout(()=>window.print(),300);<\/script>
+    </body></html>`);
+  w.document.close();
+  toast('📄 PDF abierto en nueva ventana');
+}
+
+// .txt: descarga el archivo, el modal sigue abierto
+function downloadTXT() {
+  if (!pendingTkt) return;
+  const t = pendingTkt;
+  const L = '─'.repeat(38);
+  const pad = (s,w)=>String(s).padEnd(w);
+  const rpad= (s,w)=>String(s).padStart(w);
+  const clientLine = t.client ? `Cliente : ${t.client}\n` : '';
+  const rows = t.items.map(i=>pad(i.name,22)+rpad(`${i.qty}x$${i.price}=$${i.sub}`,15)).join('\n');
+  const txt = [
+    '         '+t.shopName,
+    '     '+t.tagline,
+    L,
+    `Fecha   : ${t.dateStr}`,
+    `Hora    : ${t.timeStr}`,
+    `Folio   : ${t.folio}`,
+    clientLine.trim(),
+    L,
+    pad('Producto',22)+rpad('Cant × P.U. = Sub',15),
+    L, rows, L,
+    rpad(`TOTAL: $${t.total}`,38),
+    L,
+    '       ¡Gracias por tu visita!',
+    '         Esperamos verte pronto.',
+  ].filter(x=>x!=='').join('\n');
+  const fname = t.client ? t.client.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g,'').trim() : t.folio;
+  dlFile(`${fname}.txt`, txt, 'text/plain;charset=utf-8');
+  toast('📝 .txt descargado');
+}
+
+// WhatsApp: abre link, el modal sigue abierto
+function sendWhatsApp(target) {
+  if (!pendingTkt) return;
+  const t = pendingTkt;
+  const number = target==='client' ? t.phone : config.wsp;
+  if (!number) {
+    toast(target==='client'
+      ? '⚠️ Este cliente no tiene teléfono registrado'
+      : '⚠️ Configura el número WhatsApp del negocio en Administrar → Configuración', 'warn');
+    return;
+  }
+  const clientLine = t.client ? `👤 *Cliente:* ${t.client}\n` : '';
+  const rows = t.items.map(i=>`  • ${i.name} x${i.qty} = $${i.sub}`).join('\n');
+  const msg = `🧊 *${t.shopName}*\n${t.tagline}\n\n`
+    + `📋 *Ticket ${t.folio}*\n`
+    + `📅 ${t.dateStr}  🕐 ${t.timeStr}\n`
+    + clientLine + '\n'
+    + rows + '\n\n'
+    + `💰 *TOTAL: $${t.total}*\n\n`
+    + `¡Gracias por tu compra!`;
+  window.open(`https://wa.me/${number}?text=${encodeURIComponent(msg)}`, '_blank');
+  toast('💬 WhatsApp abierto');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACOMODADOR
+═══════════════════════════════════════════════════════ */
+function renderAcomodador() {
+  const pending = queue.filter(t=>!t.done).length;
+  const done    = queue.filter(t=>t.done).length;
+  document.getElementById('queue-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-num sn-pending">${pending}</div><div class="stat-lbl">Pendientes</div></div>
+    <div class="stat-card"><div class="stat-num sn-done">${done}</div><div class="stat-lbl">Listos</div></div>
+    <div class="stat-card"><div class="stat-num sn-total">${queue.length}</div><div class="stat-lbl">Total sesión</div></div>`;
+
+  const list = document.getElementById('queue-list');
+  if (!queue.length) {
+    list.innerHTML = `<div class="queue-empty-state"><span>📭</span>Sin pedidos en esta sesión todavía.</div>`;
+    return;
+  }
+  const sorted = [...queue.filter(t=>!t.done).reverse(), ...queue.filter(t=>t.done).reverse()];
+  list.innerHTML = sorted.map(t=>{
+    const chips = t.items.map(i=>`<div class="qc-chip"><span class="chip-qty">${i.qty}</span>${i.name}</div>`).join('');
+    const clientSpan = t.client ? `<span class="qc-client">· ${t.client}</span>`:'';
+    return `<div class="queue-card${t.done?' done':''}" id="qc-${t.folio}">
+      <div class="qc-head">
+        <span class="qc-folio">🎫 ${t.folio}</span>
+        ${clientSpan}
+        <span class="qc-time">🕐 ${t.timeStr}</span>
+        <span class="qc-total">$${t.total}</span>
+      </div>
+      <div class="qc-body"><div class="qc-chips">${chips}</div></div>
+      <div class="qc-footer">
+        ${t.done
+          ? `<button class="btn btn-ghost btn-sm" onclick="qUndo('${t.folio}')">↩️ Deshacer</button>`
+          : `<button class="btn btn-green btn-sm" onclick="qDone('${t.folio}')">✅ Listo</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function qDone(folio) {
+  const t = queue.find(x=>x.folio===folio);
+  if (t) { t.done=true; renderAcomodador(); updateBadge(); }
+}
+function qUndo(folio) {
+  const t = queue.find(x=>x.folio===folio);
+  if (t) { t.done=false; renderAcomodador(); updateBadge(); }
+}
+function clearDone() {
+  const n = queue.filter(t=>t.done).length;
+  if (!n) { toast('No hay completados para limpiar','warn'); return; }
+  queue = queue.filter(t=>!t.done);
+  renderAcomodador(); updateBadge();
+}
+function updateBadge() {
+  const n = queue.filter(t=>!t.done).length;
+  const b = document.getElementById('badge-acomo');
+  b.textContent = n;
+  b.classList.toggle('show', n>0);
+}
+
+/* ═══════════════════════════════════════════════════════
+   HISTORIAL
+═══════════════════════════════════════════════════════ */
+/* ── Week key helper: YYYY-Www ── */
+function isoWeek(dateStr) {
+  const d = new Date(dateStr);
+  const jan4 = new Date(d.getFullYear(), 0, 4);
+  const w = Math.ceil(((d - jan4) / 86400000 + jan4.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${String(w).padStart(2,'0')}`;
+}
+
+function getPeriodKey(isoDate, type) {
+  if (type==='day')   return isoDate.slice(0,10);
+  if (type==='week')  return isoWeek(isoDate);
+  if (type==='month') return isoDate.slice(0,7);
+  if (type==='year')  return isoDate.slice(0,4);
+  return 'all';
+}
+
+function periodLabel(key, type) {
+  if (type==='day')   return new Date(key+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  if (type==='week')  return `Semana ${key.split('-W')[1]}, ${key.split('-W')[0]}`;
+  if (type==='month') { const [y,m]=key.split('-'); return new Date(y,m-1,1).toLocaleDateString('es-MX',{month:'long',year:'numeric'}); }
+  if (type==='year')  return `Año ${key}`;
+  return 'Todo el historial';
+}
+
+function populatePeriodFilter() {
+  const type = document.getElementById('hist-period-type').value;
+  const sel  = document.getElementById('hist-period-value');
+  const cur  = sel.value;
+
+  if (type==='all') { sel.innerHTML='<option value="">—</option>'; sel.disabled=true; return; }
+  sel.disabled = false;
+
+  const keys = [...new Set(tickets.map(t=>getPeriodKey(t.isoDate, type)))].sort().reverse();
+  sel.innerHTML = '<option value="">Todos</option>'
+    + keys.map(k=>`<option value="${k}"${k===cur?' selected':''}>${periodLabel(k,type)}</option>`).join('');
+}
+
+function renderHistorial() {
+  populatePeriodFilter();
+  const type  = document.getElementById('hist-period-type').value;
+  const value = document.getElementById('hist-period-value').value;
+
+  const filtered = (type==='all' || !value)
+    ? tickets
+    : tickets.filter(t=>getPeriodKey(t.isoDate, type)===value);
+
+  const totalVentas  = filtered.reduce((s,t)=>s+t.total,0);
+  const totalTickets = filtered.length;
+  document.getElementById('hist-summary').innerHTML = `
+    <div class="hs-item"><div class="hs-lbl">Tickets</div><div class="hs-val">${totalTickets}</div></div>
+    <div class="hs-item"><div class="hs-lbl">Total vendido</div><div class="hs-val">$${totalVentas}</div></div>
+    <div class="hs-item"><div class="hs-lbl">Promedio por ticket</div><div class="hs-val">$${totalTickets?Math.round(totalVentas/totalTickets):0}</div></div>`;
+
+  const body = document.getElementById('hist-body');
+  if (!filtered.length) {
+    body.innerHTML = `<tr><td colspan="8" class="hist-empty">Sin registros para este período.</td></tr>`;
+    return;
+  }
+  body.innerHTML = [...filtered].reverse().map(t=>{
+    const gpsLink = (currentRole==='admin' && t.geo?.lat)
+      ? `<a href="https://maps.google.com/?q=${t.geo.lat},${t.geo.lng}" target="_blank"
+            title="📍 ${t.geo.lat}, ${t.geo.lng} (±${t.geo.accuracy}m)"
+            class="gps-meta-badge">📍 GPS</a>`
+      : '';
+    return `<tr>
+      <td><b>${t.folio}</b></td>
+      <td>${t.dateStr}</td>
+      <td>${t.timeStr}</td>
+      <td>${t.client||'—'} ${gpsLink}</td>
+      <td style="color:var(--muted);font-size:.78rem">${t.items.map(i=>i.name+' ×'+i.qty).join(', ')}</td>
+      <td><b style="color:var(--rose)">$${t.total}</b></td>
+      <td><button class="hist-detail-btn" onclick="openHistDetail('${t.folio}')">Ver</button></td>
+      <td><button class="hist-detail-btn" style="color:var(--rose)" onclick="deleteTicket('${t.folio}')" title="Eliminar">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteTicket(folio) {
+  const t = tickets.find(x=>x.folio===folio);
+  const label = t ? `${t.folio}${t.client?' – '+t.client:''}  $${t.total}` : folio;
+  if (!confirm(`¿Eliminar este ticket?\n\n${label}\n\nEsta acción no se puede deshacer.`)) return;
+  tickets = tickets.filter(x=>x.folio!==folio);
+  saveTickets();
+  renderHistorial();
+  toast('Ticket eliminado');
+}
+
+function openHistDetail(folio) {
+  const t = tickets.find(x=>x.folio===folio);
+  if (!t) return;
+  histDetailTicket = t;
+  document.getElementById('hist-detail-title').textContent = `Ticket ${t.folio}`;
+  document.getElementById('hist-detail-content').innerHTML = ticketHTML(t);
+  openModal('modal-hist-detail');
+}
+function printHistDetail() { window.print(); }
+
+function exportHistorialTXT() {
+  const type  = document.getElementById('hist-period-type').value;
+  const value = document.getElementById('hist-period-value').value;
+  const filtered = (type==='all'||!value) ? tickets : tickets.filter(t=>getPeriodKey(t.isoDate,type)===value);
+  if (!filtered.length) { toast('Sin datos para exportar','warn'); return; }
+  const L='═'.repeat(44);
+  const header = value ? periodLabel(value,type) : 'Reporte completo';
+  const lines = [
+    config.shopName, header, L,
+    `Tickets: ${filtered.length}   Total: $${filtered.reduce((s,t)=>s+t.total,0)}`,
+    L,
+    ...filtered.map(t=>`${t.folio}  ${t.dateStr}  ${t.timeStr}  ${t.client||''}  $${t.total}`
+      +'\n  '+t.items.map(i=>`${i.name} x${i.qty}=$${i.sub}`).join(', ')),
+    L,
+  ];
+  const fname = value ? `historial-${type}-${value}` : 'historial-completo';
+  dlFile(`${fname}.txt`, lines.join('\n'), 'text/plain;charset=utf-8');
+}
+
+function purgeOldData() {
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth()-3);
+  const before = tickets.length;
+  tickets = tickets.filter(t=>new Date(t.isoDate)>=cutoff);
+  const removed = before-tickets.length;
+  saveTickets();
+  renderHistorial();
+  toast(removed>0 ? `✓ Se eliminaron ${removed} tickets con más de 3 meses.` : 'No hay datos más viejos de 3 meses.');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ADMIN
+═══════════════════════════════════════════════════════ */
+function renderPriceList() {
+  const cats = {};
+  products.forEach(p=>{ if(!cats[p.cat]) cats[p.cat]=[]; cats[p.cat].push(p); });
+  document.getElementById('price-list').innerHTML = Object.entries(cats).flatMap(([cat,items])=>
+    items.map(p=>`<div class="price-row">
+      <div><div class="pr-name">${p.name}</div><div class="pr-cat">${cat}${p.promo?' · 🏷️ '+p.promo:''}</div></div>
+      <input class="price-inp" type="number" min="1" value="${p.price}" id="pr-${p.id}">
+      <button class="del-prod-btn" onclick="deleteProduct('${p.id}')" title="Eliminar">✕</button>
+    </div>`)
+  ).join('');
+}
+
+function savePrices() {
+  products.forEach(p=>{
+    const inp=document.getElementById('pr-'+p.id);
+    if (inp) { const v=parseInt(inp.value); if(v>0) p.price=v; }
+  });
+  saveProducts();
+  renderProducts();
+  toast('✓ Precios actualizados', 'success');
+}
+
+function addProduct() {
+  const name  = document.getElementById('np-name').value.trim();
+  const price = parseInt(document.getElementById('np-price').value);
+  const cat   = document.getElementById('np-cat').value.trim();
+  const promo = document.getElementById('np-promo').value.trim();
+  if (!name || !price || !cat) { toast('Completa nombre, precio y categoría', 'warn'); return; }
+  const id = 'custom_'+Date.now();
+  products.push({ id, name, cat, price, promo: promo||undefined });
+  saveProducts();
+  renderProducts();
+  renderPriceList();
+  document.getElementById('np-name').value='';
+  document.getElementById('np-price').value='';
+  document.getElementById('np-cat').value='';
+  document.getElementById('np-promo').value='';
+  toast(`✓ "${name}" agregado`, 'success');
+}
+
+function deleteProduct(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  products = products.filter(p=>p.id!==id);
+  saveProducts();
+  delete order[id];
+  renderProducts();
+  renderPriceList();
+  refreshSummary();
+  toast('Producto eliminado');
+}
+
+function saveConfig() {
+  config.shopName = document.getElementById('cfg-shop-name').value.trim() || config.shopName;
+  config.tagline  = document.getElementById('cfg-tagline').value.trim()   || config.tagline;
+  config.wsp      = document.getElementById('cfg-wsp').value.trim().replace(/\D/g,'');
+  saveConfigData();
+  document.getElementById('shop-name-display').textContent = config.shopName;
+  toast('✓ Configuración guardada', 'success');
+}
+
+function loadConfigForm() {
+  document.getElementById('cfg-shop-name').value = config.shopName;
+  document.getElementById('cfg-tagline').value   = config.tagline;
+  document.getElementById('cfg-wsp').value       = config.wsp;
+}
+
+function exportAllData() {
+  const data = {
+    version: '2.0',
+    exportedAt: new Date().toISOString(),
+    config, products, tickets, clients, lotes, rutas
+  };
+  dlFile('pos-backup-'+new Date().toISOString().slice(0,10)+'.json',
+         JSON.stringify(data,null,2), 'application/json');
+  toast('✓ Backup exportado');
+}
+
+function showStorageInfo() {
+  const used = Object.keys(localStorage).reduce((s,k)=>s+localStorage[k].length*2,0);
+  const kb = (used/1024).toFixed(1);
+  alert(`Almacenamiento usado: ~${kb} KB\nTickets guardados: ${tickets.length}\nProductos: ${products.length}`);
+}
+
+/* ═══════════════════════════════════════════════════════
+   CLIENTES
+═══════════════════════════════════════════════════════ */
+// clients: [{ id, name, phone, note, firstSeen, lastSeen, totalSpent, ticketCount, lastItems }]
+
+function normalName(n) { return n.trim().toLowerCase(); }
+
+function upsertClient(name, phone, items, total, folio) {
+  if (!name) return;
+  const key = normalName(name);
+  let c = clients.find(x=>normalName(x.name)===key);
+  const now = new Date().toISOString();
+  const lastItems = items.map(i=>i.name+' ×'+i.qty).join(', ');
+  if (c) {
+    if (phone && !c.phone) c.phone = phone;          // fill phone if missing
+    c.lastSeen    = now;
+    c.totalSpent  = (c.totalSpent||0) + total;
+    c.ticketCount = (c.ticketCount||0) + 1;
+    c.lastItems   = lastItems;
+    c.lastTicketItems = items;  // full items for "repeat order"
+  } else {
+    clients.push({ id:'c'+Date.now(), name, phone:phone||'', note:'',
+      firstSeen:now, lastSeen:now, totalSpent:total, ticketCount:1,
+      lastItems, lastTicketItems:items });
+  }
+  saveClients();
+}
+
+function renderClients() {
+  const q = (document.getElementById('clients-search').value||'').toLowerCase();
+  const filtered = q
+    ? clients.filter(c=>c.name.toLowerCase().includes(q)||(c.phone&&c.phone.includes(q)))
+    : clients;
+  const grid = document.getElementById('clients-grid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:.9rem;">
+      ${q ? 'Sin resultados para "'+q+'".' : 'Aún no hay clientes registrados.'}</div>`;
+    return;
+  }
+  const sorted = [...filtered].sort((a,b)=>a.name.localeCompare(b.name,'es'));
+  grid.innerHTML = sorted.map(c=>{
+    const phoneHtml = c.phone
+      ? `<div class="cc-phone">📱 ${c.phone}</div>`
+      : `<div class="cc-phone-none">Sin teléfono</div>`;
+    const lastDate = c.lastSeen ? new Date(c.lastSeen).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<div class="client-card">
+      <div class="cc-name">${c.name}</div>
+      ${phoneHtml}
+      <div class="cc-stats">
+        <span>🎫 <b>${c.ticketCount||0}</b> tickets</span>
+        <span>💰 <b>$${c.totalSpent||0}</b> total</span>
+      </div>
+      <div class="cc-last">
+        <div>Última visita: ${lastDate}</div>
+        <div class="cc-last-items">${c.lastItems||'—'}</div>
+      </div>
+      <div class="cc-actions">
+        <button class="btn btn-teal btn-sm" onclick="repeatOrder('${c.id}')">🔁 Repetir pedido</button>
+        ${c.phone?`<button class="btn btn-green btn-sm" onclick="wspClient('${c.phone}')">💬 WA</button>`:''}
+        <button class="btn btn-amber btn-sm" onclick="printClientQR('${c.id}')">📋 QR</button>
+        <button class="btn btn-ghost btn-sm" onclick="openClientDetail('${c.id}')">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm del-client-btn" style="color:var(--rose)" data-cid="${c.id}" title="Eliminar cliente">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function repeatOrder(cid) {
+  const c = clients.find(x=>x.id===cid);
+  if (!c || !c.lastTicketItems || !c.lastTicketItems.length) {
+    toast('Sin historial de productos para repetir','warn'); return;
+  }
+  // Load name + phone into POS fields
+  document.getElementById('client-input').value  = c.name;
+  document.getElementById('client-phone').value  = c.phone||'';
+  // Load items into order
+  clearOrder();
+  c.lastTicketItems.forEach(i=>{ order[i.id]=i.qty; });
+  renderProducts();
+  refreshSummary();
+  goTab('pos');
+  toast(`✓ Pedido de ${c.name} cargado`,'success');
+}
+
+function wspClient(phone) {
+  window.open(`https://wa.me/${phone}`, '_blank');
+}
+
+function openNewClientModal(prefillName) {
+  document.getElementById('nc-name').value  = prefillName||'';
+  document.getElementById('nc-phone').value = '';
+  document.getElementById('nc-note').value  = '';
+  document.getElementById('new-client-modal-title').textContent = 'Nuevo cliente';
+  openModal('modal-new-client');
+}
+
+function saveNewClient() {
+  const name  = document.getElementById('nc-name').value.trim();
+  const phone = document.getElementById('nc-phone').value.trim().replace(/\D/g,'');
+  const note  = document.getElementById('nc-note').value.trim();
+  if (!name) { toast('El nombre es obligatorio','warn'); return; }
+  // Duplicate check
+  const dup = clients.find(c=>normalName(c.name)===normalName(name));
+  if (dup) {
+    toast(`⚠️ Ya existe un cliente con el nombre "${dup.name}"`, 'warn'); return;
+  }
+  clients.push({ id:'c'+Date.now(), name, phone, note,
+    firstSeen:new Date().toISOString(), lastSeen:new Date().toISOString(),
+    totalSpent:0, ticketCount:0, lastItems:'', lastTicketItems:[] });
+  saveClients();
+  closeModal('modal-new-client');
+  renderClients();
+  toast(`✓ Cliente "${name}" agregado`,'success');
+}
+
+function openClientDetail(cid) {
+  const c = clients.find(x=>x.id===cid);
+  if (!c) return;
+  document.getElementById('cd-title').textContent = c.name;
+  document.getElementById('cd-body').innerHTML = `
+    <div class="form-group">
+      <label class="field-label">Nombre</label>
+      <input class="text-input" id="cd-name" value="${c.name}" maxlength="60">
+    </div>
+    <div class="form-group">
+      <label class="field-label">📱 Teléfono WhatsApp</label>
+      <input class="text-input" id="cd-phone" type="tel" value="${c.phone||''}" maxlength="20">
+    </div>
+    <div class="form-group">
+      <label class="field-label">Nota</label>
+      <input class="text-input" id="cd-note" value="${c.note||''}" maxlength="80">
+    </div>`;
+  document.getElementById('cd-footer').innerHTML = `
+    <button class="btn btn-teal btn-sm" onclick="saveClientDetail('${cid}')">✓ Guardar</button>
+    <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-client-detail')">Cancelar</button>`;
+  openModal('modal-client-detail');
+}
+
+function saveClientDetail(cid) {
+  const c = clients.find(x=>x.id===cid);
+  if (!c) return;
+  const newName = document.getElementById('cd-name').value.trim();
+  if (!newName) { toast('El nombre no puede estar vacío','warn'); return; }
+  // Duplicate check (exclude self)
+  const dup = clients.find(x=>x.id!==cid && normalName(x.name)===normalName(newName));
+  if (dup) { toast(`⚠️ Ya existe "${dup.name}"`, 'warn'); return; }
+  c.name  = newName;
+  c.phone = document.getElementById('cd-phone').value.trim().replace(/\D/g,'');
+  c.note  = document.getElementById('cd-note').value.trim();
+  saveClients();
+  closeModal('modal-client-detail');
+  renderClients();
+  toast('✓ Cliente actualizado','success');
+}
+
+function deleteClient(cid) {
+  const idx = clients.findIndex(x=>x.id===cid);
+  if (idx === -1) return;
+  const c = clients[idx];
+  if (!confirm(`¿Eliminar a "${c.name}" del directorio?\n\nSus tickets en el historial no se borran.`)) return;
+  clients.splice(idx, 1);
+  saveClients();
+  renderClients();
+  toast('Cliente eliminado');
+}
+
+/* ── Event delegation for delete buttons (avoids inline onclick ID quoting issues) ── */
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.del-client-btn');
+  if (btn) { e.stopPropagation(); deleteClient(btn.dataset.cid); }
+});
+
+/* ── Autocomplete in POS sidebar ── */
+function onClientInput() {
+  refreshSummary();
+  const val = (document.getElementById('client-input').value||'').trim().toLowerCase();
+  const list = document.getElementById('ac-list');
+  if (!val || val.length < 1) { list.style.display='none'; return; }
+  const matches = clients.filter(c=>c.name.toLowerCase().includes(val)).slice(0,6);
+  if (!matches.length) { list.style.display='none'; return; }
+  list.innerHTML = matches.map(c=>`
+    <div class="autocomplete-item" onmousedown="selectClient('${c.id}')">
+      <span>${c.name}</span>
+      <span class="ac-phone">${c.phone||''}</span>
+    </div>`).join('');
+  list.style.display='block';
+}
+
+function selectClient(cid) {
+  const c = clients.find(x=>x.id===cid);
+  if (!c) return;
+  document.getElementById('client-input').value  = c.name;
+  document.getElementById('client-phone').value  = c.phone||'';
+  document.getElementById('ac-list').style.display='none';
+  refreshSummary();
+  toast(`👤 ${c.name} — última compra: ${c.lastItems||'sin datos'}`);
+}
+
+function hideAC() {
+  setTimeout(()=>{ const l=document.getElementById('ac-list'); if(l) l.style.display='none'; }, 180);
+}
+
+/* ── Duplicate name warning on input blur ── */
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inp = document.getElementById('client-input');
+  if (inp) inp.addEventListener('blur', ()=>{
+    const val = inp.value.trim();
+    if (!val) return;
+    const exists = clients.find(c=>normalName(c.name)===normalName(val));
+    if (exists && exists.phone) {
+      const phoneEl = document.getElementById('client-phone');
+      if (phoneEl && !phoneEl.value) phoneEl.value = exists.phone;
+    }
+  });
+});
+
+
+/* ═══════════════════════════════════════════════════════
+   AUTH MODULE
+   - Roles: admin (PIN protegido) | vendor (acceso libre)
+   - PIN hasheado con SHA-256 via Web Crypto API
+   - Sesión guardada en sessionStorage (dura hasta cerrar tab)
+   - Admin ve tabs extra + metadatos GPS en historial
+═══════════════════════════════════════════════════════ */
+
+const DEFAULT_ADMIN_PIN = '1234'; // cambiable desde Admin → Seguridad
+
+function selectAuthRole(role) {
+  authSelectedRole = role;
+  document.getElementById('role-btn-admin').classList.toggle('active', role==='admin');
+  document.getElementById('role-btn-vendor').classList.toggle('active', role==='vendor');
+  document.getElementById('auth-pin-section').style.display   = role==='admin' ? '' : 'none';
+  document.getElementById('auth-vendor-section').style.display= role==='vendor' ? '' : 'none';
+  pinClear();
+}
+
+function pinKey(k) {
+  if (authPinBuffer.length >= 4) return;
+  authPinBuffer += k;
+  updatePinDisplay();
+  if (authPinBuffer.length === 4) setTimeout(pinEnter, 200);
+}
+
+function pinDel() {
+  authPinBuffer = authPinBuffer.slice(0, -1);
+  updatePinDisplay();
+}
+
+function pinClear() {
+  authPinBuffer = '';
+  updatePinDisplay();
+  const err = document.getElementById('auth-error');
+  if (err) err.textContent = '';
+}
+
+function updatePinDisplay() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd-' + i);
+    if (dot) dot.classList.toggle('filled', i < authPinBuffer.length);
+  }
+}
+
+async function pinEnter() {
+  if (authPinBuffer.length < 4) return;
+  const auth    = loadAuth();
+  const stored  = auth.adminPinHash || await sha256(DEFAULT_ADMIN_PIN);
+  const entered = await sha256(authPinBuffer);
+  if (entered === stored) {
+    loginAs('admin');
+  } else {
+    const err = document.getElementById('auth-error');
+    if (err) err.textContent = 'PIN incorrecto. Intenta de nuevo.';
+    authPinBuffer = '';
+    updatePinDisplay();
+    // Shake animation
+    const box = document.querySelector('.auth-box');
+    if (box) { box.style.animation='shake .3s'; setTimeout(()=>box.style.animation='',400); }
+  }
+}
+
+function loginVendor() { loginAs('vendor'); }
+
+function loginAs(role) {
+  currentRole = role;
+  sessionStorage.setItem('pos_role', role);
+  // Apply role to body
+  document.body.classList.remove('role-admin', 'role-vendor');
+  document.body.classList.add('role-' + role);
+  // Update badge
+  const badge = document.getElementById('role-badge');
+  if (badge) {
+    badge.textContent  = role === 'admin' ? '👑 Admin' : '🛒 Vendedor';
+    badge.className    = 'role-badge ' + role;
+  }
+  // Hide auth screen
+  const screen = document.getElementById('auth-screen');
+  if (screen) screen.style.display = 'none';
+  // Re-render nav (admin tabs now visible)
+  refreshNavForRole();
+  toast(`Bienvenido — acceso ${role === 'admin' ? 'administrador' : 'vendedor'}`, 'success');
+}
+
+function logout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  currentRole = null;
+  sessionStorage.removeItem('pos_role');
+  document.body.classList.remove('role-admin', 'role-vendor');
+  pinClear();
+  authSelectedRole = 'admin';
+  selectAuthRole('admin');
+  const screen = document.getElementById('auth-screen');
+  if (screen) screen.style.display = 'flex';
+  // Go back to POS tab
+  goTab('pos');
+}
+
+function refreshNavForRole() {
+  // Admin-only tabs visibility handled by CSS class on body
+  // Rebuild tab index map dynamically
+}
+
+/* Resume session if tab reloaded without closing */
+function resumeSession() {
+  const saved = sessionStorage.getItem('pos_role');
+  if (saved) { loginAs(saved); return true; }
+  return false;
+}
+
+/* Change admin PIN from admin panel */
+async function saveAdminPin() {
+  const p1 = (document.getElementById('pin-new').value || '').trim();
+  const p2 = (document.getElementById('pin-confirm').value || '').trim();
+  if (!/^\d{4}$/.test(p1)) { toast('El PIN debe ser exactamente 4 dígitos','warn'); return; }
+  if (p1 !== p2) { toast('Los PINs no coinciden','warn'); return; }
+  const auth = loadAuth();
+  auth.adminPinHash = await sha256(p1);
+  saveAuth(auth);
+  document.getElementById('pin-new').value = '';
+  document.getElementById('pin-confirm').value = '';
+  toast('✓ PIN actualizado', 'success');
+}
+
+/* CSS shake keyframe (inline) */
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = `@keyframes shake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)}
+}`;
+document.head.appendChild(shakeStyle);
+
+/* ═══════════════════════════════════════════════════════
+   PRODUCCIÓN MODULE
+   - Registra lotes por SKU (producto + presentación)
+   - Actualiza stock en tiempo real
+   - Descuenta stock automáticamente al generar ticket
+   - Alerta cuando stock < minStock
+═══════════════════════════════════════════════════════ */
+
+function getStock(productId) {
+  const auth = loadLotes();
+  // Sum all lotes produced minus all ticket sales
+  const produced = lotes.reduce((s, l) => {
+    const item = l.items.find(i=>i.productId===productId);
+    return s + (item ? item.qty : 0);
+  }, 0);
+  const sold = tickets.reduce((s, t) => {
+    const item = t.items.find(i=>i.id===productId);
+    return s + (item ? item.qty : 0);
+  }, 0);
+  return Math.max(0, produced - sold);
+}
+
+function renderStockGrid() {
+  const grid = document.getElementById('stock-grid');
+  if (!grid) return;
+  if (!products.length) { grid.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Sin productos configurados.</p>'; return; }
+  grid.innerHTML = products.map(p => {
+    const stock = getStock(p.id);
+    const min   = p.minStock || 10;
+    const cls   = stock === 0 ? 'zero' : stock <= min ? 'low' : '';
+    const size  = p.size ? ` · ${p.size}` : '';
+    return `<div class="stock-card ${cls}">
+      <div class="sc-size">${p.cat}${size}</div>
+      <div class="sc-name">${p.name}</div>
+      <div class="sc-stock">${stock}</div>
+      <div class="sc-label">unidades disponibles</div>
+      <div class="sc-actions">
+        <button class="btn btn-ghost btn-sm" onclick="quickAdjust('${p.id}',1)">+1</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickAdjust('${p.id}',-1)">−1</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderLoteForm() {
+  const form = document.getElementById('lote-items-form');
+  if (!form) return;
+  form.innerHTML = products.map(p => {
+    const size = p.size ? ` (${p.size})` : '';
+    return `<div class="lote-row">
+      <div class="lote-row-name">${p.name}${size}</div>
+      <div class="lote-row-size">${p.cat}</div>
+      <input class="lote-qty-inp" type="number" min="0" value="0"
+             id="lq-${p.id}" placeholder="0">
+    </div>`;
+  }).join('');
+}
+
+function clearLoteForm() {
+  products.forEach(p => {
+    const inp = document.getElementById('lq-' + p.id);
+    if (inp) inp.value = 0;
+  });
+}
+
+function saveLote() {
+  const items = products.map(p => {
+    const inp = document.getElementById('lq-' + p.id);
+    const qty = parseInt(inp?.value || 0);
+    return { productId: p.id, qty };
+  }).filter(i => i.qty > 0);
+
+  if (!items.length) { toast('Ingresa al menos una cantidad','warn'); return; }
+
+  const lote = {
+    id:     'L-' + String(lotes.length + 1).padStart(4,'0'),
+    date:   new Date().toISOString(),
+    dateStr:new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}),
+    timeStr:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    registradoPor: currentRole || 'admin',
+    items
+  };
+
+  lotes.push(lote);
+  saveLotes();
+  clearLoteForm();
+  renderStockGrid();
+  renderLoteHistory();
+  toast(`✓ Lote ${lote.id} registrado — ${items.reduce((s,i)=>s+i.qty,0)} unidades`, 'success');
+
+  // Check low stock alerts
+  checkStockAlerts();
+}
+
+function quickAdjust(productId, delta) {
+  // Creates a micro-lote for quick manual adjustments
+  const lote = {
+    id:     'A-' + Date.now(),
+    date:   new Date().toISOString(),
+    dateStr: new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short'}),
+    timeStr: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    registradoPor: 'ajuste-manual',
+    items: [{ productId, qty: delta }]
+  };
+  lotes.push(lote);
+  saveLotes();
+  renderStockGrid();
+  toast(`Ajuste: ${delta > 0 ? '+' : ''}${delta} unidad`, delta > 0 ? 'success' : '');
+}
+
+function renderLoteHistory() {
+  const el = document.getElementById('lote-history');
+  if (!el) return;
+  const pm = getProductMap();
+  const recent = [...lotes].reverse().slice(0, 20);
+  if (!recent.length) { el.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Sin lotes registrados.</p>'; return; }
+  el.innerHTML = recent.map(l => {
+    const chips = l.items.map(i => {
+      const p = pm[i.productId];
+      return `<span class="lote-chip">${p ? p.name : i.productId} ×${i.qty}</span>`;
+    }).join('');
+    return `<div class="lote-card">
+      <div class="lote-card-head">
+        <span class="lote-id">📦 ${l.id}</span>
+        <span class="lote-date">${l.dateStr} ${l.timeStr}</span>
+      </div>
+      <div class="lote-items-chips">${chips}</div>
+    </div>`;
+  }).join('');
+}
+
+function checkStockAlerts() {
+  products.forEach(p => {
+    const stock = getStock(p.id);
+    const min   = p.minStock || 10;
+    if (stock === 0) toast(`⚠️ Sin stock: ${p.name}`, 'err');
+    else if (stock <= min) toast(`⚠️ Stock bajo: ${p.name} (${stock} uds)`, 'warn');
+  });
+}
+
+/* Descontar stock al confirmar ticket */
+function descontarStock(ticketItems) {
+  // Stock calculation is derived (lotes - tickets), so no mutation needed.
+  // Just trigger a re-render of stock grid if visible.
+  if (document.getElementById('panel-produccion')?.classList.contains('active')) {
+    renderStockGrid();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RUTAS MODULE
+   - Prepara inventario de salida por ruta
+   - Asigna clientes geográficamente
+   - Vendedor escanea QR al llegar a cada punto
+   - Cierra ruta y calcula sobrante
+   - Metadatos GPS en cada ticket
+═══════════════════════════════════════════════════════ */
+
+function renderRutas() {
+  renderRutaStatus();
+  renderRutasHistory();
+}
+
+function renderRutaStatus() {
+  const statusTxt  = document.getElementById('ruta-status-txt');
+  const btnNueva   = document.getElementById('btn-nueva-ruta');
+  const btnCerrar  = document.getElementById('btn-cerrar-ruta');
+  const invSection = document.getElementById('ruta-inv-section');
+  if (!statusTxt) return;
+
+  if (activeRuta) {
+    const vendedor = activeRuta.vendedor || 'Vendedor';
+    const visited  = activeRuta.visitados?.length || 0;
+    const total    = activeRuta.clientesAsignados?.length || 0;
+    statusTxt.className = 'ruta-status-active';
+    statusTxt.textContent = `🚚 Ruta activa — ${vendedor} · ${visited}/${total} visitas`;
+    if (btnNueva)  btnNueva.style.display  = 'none';
+    if (btnCerrar) btnCerrar.style.display = '';
+    if (invSection) {
+      invSection.style.display = '';
+      renderRutaInv();
+      renderRutaClients();
+    }
+  } else {
+    statusTxt.className   = 'ruta-status-none';
+    statusTxt.textContent = 'Sin ruta activa hoy.';
+    if (btnNueva)  btnNueva.style.display  = '';
+    if (btnCerrar) btnCerrar.style.display = 'none';
+    if (invSection) invSection.style.display = 'none';
+  }
+}
+
+function renderRutaInv() {
+  const grid = document.getElementById('ruta-inv-grid');
+  if (!grid || !activeRuta) return;
+  const pm = getProductMap();
+  grid.innerHTML = (activeRuta.inventarioInicial || []).map(item => {
+    const p    = pm[item.productId];
+    const sold = (activeRuta.tickets || []).reduce((s, tid) => {
+      const t = tickets.find(x=>x.folio===tid);
+      if (!t) return s;
+      const ti = t.items.find(i=>i.id===item.productId);
+      return s + (ti ? ti.qty : 0);
+    }, 0);
+    const rem = Math.max(0, item.qty - sold);
+    return `<div class="ruta-inv-row">
+      <div><div class="ri-name">${p ? p.name : item.productId}</div>
+           <div class="ri-sold">Vendido: ${sold}</div></div>
+      <div class="ri-qty">${rem}</div>
+    </div>`;
+  }).join('') || '<p style="color:var(--muted);font-size:.82rem">Sin inventario asignado.</p>';
+}
+
+function renderRutaClients() {
+  const list = document.getElementById('ruta-client-list');
+  if (!list || !activeRuta) return;
+  const visitados = activeRuta.visitados || [];
+  const clientIds = activeRuta.clientesAsignados || [];
+  list.innerHTML = clientIds.map(cid => {
+    const c   = clients.find(x=>x.id===cid);
+    if (!c) return '';
+    const vis = visitados.includes(cid);
+    return `<div class="visit-card ${vis ? 'visited' : 'pending'}">
+      <div style="flex:1">
+        <div class="vc-name">${c.name}</div>
+        <div class="vc-addr">${c.address||c.phone||''}</div>
+      </div>
+      ${c.lat && c.lng ? `<a href="https://maps.google.com/?q=${c.lat},${c.lng}" target="_blank" class="btn btn-ghost btn-sm">📍 Mapa</a>` : ''}
+      ${vis
+        ? `<span class="vc-status-visited">✅ Visitado</span>`
+        : `<button class="btn btn-teal btn-sm" onclick="marcarVisita('${cid}')">Marcar visita</button>`}
+    </div>`;
+  }).join('') || '<p style="color:var(--muted);font-size:.82rem">Sin clientes asignados.</p>';
+}
+
+function renderRutasHistory() {
+  const el = document.getElementById('rutas-history');
+  if (!el) return;
+  const cerradas = [...rutas].filter(r=>r.status==='cerrada').reverse().slice(0,10);
+  if (!cerradas.length) { el.innerHTML = '<p style="color:var(--muted);font-size:.82rem">Sin rutas anteriores.</p>'; return; }
+  el.innerHTML = cerradas.map(r => {
+    const total = (r.tickets||[]).reduce((s,tid) => {
+      const t = tickets.find(x=>x.folio===tid);
+      return s + (t ? t.total : 0);
+    }, 0);
+    return `<div class="lote-card">
+      <div class="lote-card-head">
+        <span class="lote-id">🗺️ ${r.id}</span>
+        <span class="lote-date">${r.dateStr} · ${r.vendedor}</span>
+        <span style="font-family:var(--font-display);color:var(--rose)">$${total}</span>
+      </div>
+      <div style="font-size:.76rem;color:var(--muted)">${(r.visitados||[]).length}/${(r.clientesAsignados||[]).length} clientes · ${(r.tickets||[]).length} tickets</div>
+    </div>`;
+  }).join('');
+}
+
+function openNuevaRuta() {
+  // Build inventory assignment form
+  const invForm = document.getElementById('nr-inv-form');
+  if (invForm) {
+    invForm.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">` +
+      products.map(p => `<div class="lote-row">
+        <div class="lote-row-name">${p.name}</div>
+        <div style="font-size:.72rem;color:var(--muted)">Stock: ${getStock(p.id)}</div>
+        <input class="lote-qty-inp" type="number" min="0" value="0" id="nr-${p.id}" style="width:60px">
+      </div>`).join('') + '</div>';
+  }
+  // Build clients checklist
+  const cForm = document.getElementById('nr-clients-form');
+  if (cForm) {
+    cForm.innerHTML = clients.length
+      ? clients.map(c => `<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--cream-100);border-radius:6px;cursor:pointer;font-size:.82rem">
+          <input type="checkbox" id="nrc-${c.id}" style="width:16px;height:16px">
+          <span>${c.name}</span>
+          ${c.address ? `<span style="color:var(--muted);font-size:.72rem"> · ${c.address}</span>` : ''}
+        </label>`).join('')
+      : '<p style="color:var(--muted);font-size:.82rem">Sin clientes registrados aún.</p>';
+  }
+  openModal('modal-nueva-ruta');
+}
+
+function iniciarRuta() {
+  const vendedor = (document.getElementById('nr-vendedor').value||'').trim();
+  if (!vendedor) { toast('Ingresa el nombre del vendedor','warn'); return; }
+
+  const inventarioInicial = products.map(p => {
+    const inp = document.getElementById('nr-' + p.id);
+    const qty = parseInt(inp?.value || 0);
+    return { productId: p.id, qty };
+  }).filter(i => i.qty > 0);
+
+  const clientesAsignados = clients
+    .filter(c => document.getElementById('nrc-' + c.id)?.checked)
+    .map(c => c.id);
+
+  const ruta = {
+    id:                 'R-' + new Date().toISOString().slice(0,10),
+    date:               new Date().toISOString(),
+    dateStr:            new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}),
+    vendedor,
+    inventarioInicial,
+    clientesAsignados,
+    visitados:          [],
+    tickets:            [],
+    status:             'activa',
+  };
+
+  rutas.push(ruta);
+  activeRuta = ruta;
+  saveRutas();
+  closeModal('modal-nueva-ruta');
+  renderRutaStatus();
+  toast(`✓ Ruta ${ruta.id} iniciada — ${clientesAsignados.length} clientes`, 'success');
+}
+
+function marcarVisita(clientId) {
+  if (!activeRuta) return;
+  if (!activeRuta.visitados) activeRuta.visitados = [];
+  if (!activeRuta.visitados.includes(clientId)) {
+    activeRuta.visitados.push(clientId);
+    saveRutas();
+    renderRutaClients();
+    updateBadge();
+    const c = clients.find(x=>x.id===clientId);
+    toast(`✓ Visita registrada: ${c?.name || clientId}`,'success');
+  }
+}
+
+function cerrarRuta() {
+  if (!activeRuta) return;
+  if (!confirm(`¿Cerrar la ruta ${activeRuta.id}?\n\nEl inventario sobrante volverá al stock.`)) return;
+  activeRuta.status    = 'cerrada';
+  activeRuta.closedAt  = new Date().toISOString();
+  // Sobrante: inventario inicial - vendido en ruta
+  activeRuta.sobrante  = (activeRuta.inventarioInicial || []).map(item => {
+    const sold = (activeRuta.tickets || []).reduce((s, tid) => {
+      const t = tickets.find(x=>x.folio===tid);
+      if (!t) return s;
+      const ti = t.items.find(i=>i.id===item.productId);
+      return s + (ti ? ti.qty : 0);
+    }, 0);
+    return { productId: item.productId, qty: Math.max(0, item.qty - sold) };
+  });
+  saveRutas();
+  activeRuta = null;
+  renderRutaStatus();
+  renderRutasHistory();
+  toast('Ruta cerrada. Sobrante reintegrado al inventario.', 'success');
+}
+
+/* Link ticket to active ruta */
+function linkTicketToRuta(folio, clientId) {
+  if (!activeRuta) return;
+  if (!activeRuta.tickets) activeRuta.tickets = [];
+  activeRuta.tickets.push(folio);
+  if (clientId && !activeRuta.visitados?.includes(clientId)) {
+    if (!activeRuta.visitados) activeRuta.visitados = [];
+    activeRuta.visitados.push(clientId);
+  }
+  saveRutas();
+}
+
+/* ═══════════════════════════════════════════════════════
+   GPS MODULE
+   - Captura lat/lng al generar cada ticket
+   - Guarda en ticket.geo (solo visible para admin)
+   - Precisión reportada en metadatos
+═══════════════════════════════════════════════════════ */
+
+let lastGeoPosition = null;
+
+function captureGPS() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        lastGeoPosition = {
+          lat:       parseFloat(pos.coords.latitude.toFixed(6)),
+          lng:       parseFloat(pos.coords.longitude.toFixed(6)),
+          accuracy:  Math.round(pos.coords.accuracy),
+          capturedAt: new Date().toISOString(),
+        };
+        resolve(lastGeoPosition);
+      },
+      () => resolve(null),   // permission denied or unavailable → silent fail
+      { timeout: 4000, maximumAge: 30000, enableHighAccuracy: true }
+    );
+  });
+}
+
+function geoMapsURL(geo) {
+  if (!geo?.lat) return null;
+  return `https://maps.google.com/?q=${geo.lat},${geo.lng}`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   QR SCANNER MODULE (jsQR via CDN, loaded on demand)
+   - Abre cámara trasera
+   - Lee QR code del cliente (formato: FRIT-CLI-{id})
+   - Auto-rellena cliente en POS
+   - Funciona en HTTPS + localhost
+═══════════════════════════════════════════════════════ */
+
+let jsQRLoaded = false;
+
+async function loadJsQR() {
+  if (jsQRLoaded || window.jsQR) { jsQRLoaded = true; return true; }
+  return new Promise(resolve => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+    s.onload  = () => { jsQRLoaded = true; resolve(true); };
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+}
+
+async function openQRScanner(onSuccess) {
+  const loaded = await loadJsQR();
+  if (!loaded) { toast('Sin conexión para cargar escáner QR','warn'); return; }
+
+  const overlay = document.getElementById('qr-overlay');
+  const video   = document.getElementById('qr-video');
+  if (!overlay || !video) return;
+
+  try {
+    qrStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+    video.srcObject = qrStream;
+    overlay.classList.add('open');
+
+    const canvas = document.createElement('canvas');
+    const ctx    = canvas.getContext('2d');
+
+    function scanFrame() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = window.jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) {
+          closeQR();
+          onSuccess(code.data);
+          return;
+        }
+      }
+      qrAnimFrame = requestAnimationFrame(scanFrame);
+    }
+    qrAnimFrame = requestAnimationFrame(scanFrame);
+
+  } catch(e) {
+    toast('No se pudo acceder a la cámara. Verifica los permisos.','err');
+  }
+}
+
+function closeQR() {
+  if (qrAnimFrame) { cancelAnimationFrame(qrAnimFrame); qrAnimFrame = null; }
+  if (qrStream)    { qrStream.getTracks().forEach(t=>t.stop()); qrStream = null; }
+  const overlay = document.getElementById('qr-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function handleQRResult(data) {
+  // Expected format: FRIT-CLI-c1234567890
+  const match = data.match(/FRIT-CLI-(.+)/);
+  if (!match) { toast('QR no reconocido: ' + data.slice(0,30),'warn'); return; }
+  const cid = match[1];
+  const c   = clients.find(x=>x.id===cid);
+  if (!c) { toast('Cliente no encontrado en el directorio','warn'); return; }
+
+  // Auto-fill POS fields
+  selectClient(c.id);
+  if (activeRuta) marcarVisita(c.id);
+  goTab('pos');
+  toast(`✓ QR escaneado: ${c.name}`, 'success');
+}
+
+/* Add QR scan button to POS sidebar */
+function addQRButtonToSidebar() {
+  const clientWrap = document.querySelector('.client-wrap');
+  if (!clientWrap || document.getElementById('btn-qr-scan')) return;
+  const btn = document.createElement('button');
+  btn.id = 'btn-qr-scan';
+  btn.className = 'btn btn-ghost btn-sm';
+  btn.style.marginTop = '8px';
+  btn.innerHTML = '📷 Escanear QR del cliente';
+  btn.onclick = () => openQRScanner(handleQRResult);
+  clientWrap.appendChild(btn);
+}
+
+/* Generate QR code data URL for a client (for printing) */
+function generateClientQR(clientId) {
+  const data = `FRIT-CLI-${clientId}`;
+  // Use qrcode.js if available, else return data string for manual generation
+  if (window.QRCode) {
+    const el = document.createElement('div');
+    new QRCode(el, { text: data, width:128, height:128 });
+    return el.querySelector('img')?.src || data;
+  }
+  return data;
+}
+
+/* ═══════════════════════════════════════════════════════
+   UPDATED FUNCTIONS
+═══════════════════════════════════════════════════════ */
+
+/* Override goTab to handle new tabs + role guard */
+function goTab(name) {
+  const adminTabs = ['produccion','rutas','admin'];
+  if (adminTabs.includes(name) && currentRole !== 'admin') {
+    toast('⛔ Acceso solo para administrador','warn'); return;
+  }
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  const panel = document.getElementById('panel-'+name);
+  if (!panel) return;
+  panel.classList.add('active');
+
+  // Find and activate nav tab by matching onclick
+  document.querySelectorAll('.nav-tab').forEach(b => {
+    if (b.getAttribute('onclick') === `goTab('${name}')`) b.classList.add('active');
+  });
+
+  if (name==='acomodador') renderAcomodador();
+  if (name==='historial')  renderHistorial();
+  if (name==='clientes')   renderClients();
+  if (name==='produccion') { renderStockGrid(); renderLoteForm(); renderLoteHistory(); }
+  if (name==='rutas')      renderRutas();
+  if (name==='admin')      { renderPriceList(); loadConfigForm(); }
+}
+
+
+
+/* ═══════════════════════════════════════════════════════
+   QR GENERATION MODULE
+   - Genera QR por cliente con código FRIT-CLI-{id}
+   - Renderiza en modal usando qrcode.js (CDN on demand)
+   - Imprime hoja con QR + nombre del negocio, lista para
+     pegar en la tienda del cliente
+═══════════════════════════════════════════════════════ */
+
+let qrcodeLibLoaded = false;
+let currentQRClient = null;
+
+async function loadQRCodeLib() {
+  if (qrcodeLibLoaded || window.QRCode) { qrcodeLibLoaded = true; return true; }
+  return new Promise(resolve => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+    s.onload  = () => { qrcodeLibLoaded = true; resolve(true); };
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+}
+
+async function printClientQR(cid) {
+  const c = clients.find(x => x.id === cid);
+  if (!c) return;
+
+  currentQRClient = c;
+
+  const ok = await loadQRCodeLib();
+  const renderEl = document.getElementById('qr-code-render');
+  const codeStr  = `FRIT-CLI-${c.id}`;
+
+  renderEl.innerHTML = '';    // clear previous
+
+  if (ok && window.QRCode) {
+    // Render with qrcodejs
+    new QRCode(renderEl, {
+      text:            codeStr,
+      width:           200,
+      height:          200,
+      colorDark:       '#2A1A0E',
+      colorLight:      '#FFFFFF',
+      correctLevel:    QRCode.CorrectLevel.H   // High — tolerates 30% damage
+    });
+  } else {
+    // Fallback: show code string + link to generate externally
+    renderEl.innerHTML = `
+      <div style="padding:20px;border:2px dashed var(--cream-300);border-radius:8px;font-size:.8rem;color:var(--muted)">
+        Sin conexión para generar QR.<br>
+        <a href="https://qr.io/?text=${encodeURIComponent(codeStr)}" target="_blank"
+           style="color:var(--teal)">Generar online →</a>
+      </div>`;
+  }
+
+  // Show client info
+  document.getElementById('qr-modal-title').textContent = `QR — ${c.name}`;
+  document.getElementById('qr-client-info').innerHTML   =
+    `<b>${c.name}</b><br>${c.address || ''}${c.phone ? '<br>📱 '+c.phone : ''}`;
+  document.getElementById('qr-code-string').textContent = codeStr;
+
+  openModal('modal-client-qr');
+}
+
+function printClientQRSheet() {
+  const c = currentQRClient;
+  if (!c) return;
+
+  const codeStr = `FRIT-CLI-${c.id}`;
+
+  // Get the QR canvas/img from the rendered element
+  const renderEl = document.getElementById('qr-code-render');
+  const qrImg    = renderEl.querySelector('img') || renderEl.querySelector('canvas');
+  let   qrSrc    = '';
+
+  if (qrImg?.tagName === 'IMG')    qrSrc = qrImg.src;
+  if (qrImg?.tagName === 'CANVAS') qrSrc = qrImg.toDataURL();
+
+  const shopName = config.shopName || 'Mi Negocio';
+  const address  = c.address || '';
+  const lastDate = c.lastSeen
+    ? new Date(c.lastSeen).toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})
+    : '—';
+
+  // Build a clean print-only page with the QR + client info
+  const printWin = window.open('', '_blank', 'width=500,height=700');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>QR — ${c.name}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .sheet {
+      width: 100%; max-width: 320px;
+      border: 2px solid #E0C4A8;
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .shop-name {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1.1rem; color: #3D2B1A;
+      margin-bottom: 4px;
+    }
+    .divider {
+      border: none; border-top: 1.5px dashed #C8A882;
+      margin: 14px 0;
+    }
+    .qr-box {
+      display: flex; justify-content: center;
+      margin: 12px 0;
+    }
+    .qr-box img { width: 200px; height: 200px; }
+    .client-name {
+      font-size: 1rem; font-weight: 700;
+      color: #2A1A0E; margin-bottom: 4px;
+    }
+    .client-detail {
+      font-size: .75rem; color: #9E8878; line-height: 1.6;
+    }
+    .code-str {
+      font-family: monospace; font-size: .65rem;
+      background: #F7EDE2; border-radius: 6px;
+      padding: 4px 8px; margin-top: 10px;
+      display: inline-block; color: #7A5C42;
+      word-break: break-all;
+    }
+    .instr {
+      font-size: .72rem; color: #9E8878;
+      margin-top: 14px; line-height: 1.5;
+    }
+    .instr b { color: #3D2B1A; }
+    @media print {
+      body { min-height: unset; }
+      @page { margin: 8mm; size: A6; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="shop-name">🏪 ${shopName}</div>
+    <div style="font-size:.7rem;color:#9E8878">Sistema de distribución</div>
+    <hr class="divider">
+
+    <div class="qr-box">
+      ${qrSrc
+        ? `<img src="${qrSrc}" alt="QR ${c.name}">`
+        : `<div style="width:200px;height:200px;border:2px dashed #C8A882;border-radius:8px;
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:.75rem;color:#9E8878;padding:16px">
+             Genera el QR con el código de abajo
+           </div>`}
+    </div>
+
+    <div class="client-name">${c.name}</div>
+    <div class="client-detail">
+      ${address ? address + '<br>' : ''}
+      ${c.phone ? '📱 ' + c.phone : ''}
+    </div>
+
+    <div class="code-str">${codeStr}</div>
+
+    <hr class="divider">
+    <div class="instr">
+      <b>Instrucciones:</b><br>
+      Pega este código en un lugar visible del negocio.<br>
+      El vendedor lo escanea al llegar para registrar la visita.
+    </div>
+  </div>
+  <script>
+    window.onload = () => setTimeout(() => window.print(), 400);
+  <\/script>
+</body>
+</html>`);
+
+  printWin.document.close();
+  toast('🖨️ Hoja QR enviada a impresora');
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════ */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function dlFile(name, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type}));
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+function toast(msg, type='') {
+  const c = document.getElementById('toast-container');
+  const d = document.createElement('div');
+  d.className = 'toast' + (type ? ' '+type : '');
+  d.textContent = msg;
+  c.appendChild(d);
+  setTimeout(()=>d.remove(), 3200);
+}
+
+/* ── Tabs ── */
+function goTab(name) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  const tabs={pos:0,acomodador:1,historial:2,clientes:3,admin:4};
+  document.querySelectorAll('.nav-tab')[tabs[name]].classList.add('active');
+  if (name==='acomodador') renderAcomodador();
+  if (name==='historial')  renderHistorial();
+  if (name==='clientes')   renderClients();
+  if (name==='admin')      { renderPriceList(); loadConfigForm(); }
+}
+
+/* ── Offline detection ── */
+function checkOnline() {
+  document.getElementById('offline-pill').classList.toggle('show', !navigator.onLine);
+}
+window.addEventListener('online',  checkOnline);
+window.addEventListener('offline', checkOnline);
+checkOnline();
+
+/* ── Close modals on overlay click ── */
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click', e=>{ if(e.target===el) closeModal(el.id); });
+});
+
+/* ── Close ticket modal properly ── */
+document.getElementById('modal-ticket').addEventListener('click', function(e){
+  if (e.target===this) closeTicketModal();
+});
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+(function boot() {
+  // Apply shop name everywhere
+  document.getElementById('shop-name-display').textContent = config.shopName;
+  const authTitle = document.getElementById('auth-shop-title');
+  if (authTitle) authTitle.textContent = config.shopName;
+
+  // Render products and summary
+  renderProducts();
+  refreshSummary();
+  updateBadge();
+
+  // Add QR scan button to sidebar
+  addQRButtonToSidebar();
+
+  // Try to resume previous session (e.g. page refresh)
+  // If no saved session, show auth screen
+  if (!resumeSession()) {
+    const screen = document.getElementById('auth-screen');
+    if (screen) screen.style.display = 'flex';
+  }
+
+  // Pre-warm GPS permission (silent request so first ticket is faster)
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(() => {}, () => {}, { timeout: 2000 });
+  }
+})();
+</script>
+
+<!-- ══ SERVICE WORKER – offline completo ══ -->
+<script>
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+
+  // Version — increment this string any time you update the file
+  const VERSION = 'pos-v1';
+
+  const swCode = `
+const VERSION = '${VERSION}';
+const CACHE   = VERSION;
+
+// On install: cache nothing upfront (file:// has no URL to cache)
+// We use runtime caching for everything instead
+self.addEventListener('install', e => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  // Delete all old caches
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Cache-first with network fallback
+self.addEventListener('fetch', e => {
+  // Skip non-GET and chrome-extension requests
+  if (e.request.method !== 'GET') return;
+  if (e.request.url.startsWith('chrome-extension')) return;
+
+  e.respondWith(
+    caches.open(CACHE).then(cache =>
+      cache.match(e.request).then(cached => {
+        if (cached) return cached;           // ← serve from cache instantly
+
+        return fetch(e.request)
+          .then(response => {
+            // Only cache valid responses
+            if (response && response.status === 200 && response.type !== 'opaque') {
+              cache.put(e.request, response.clone());
+            }
+            return response;
+          })
+          .catch(() => cached || new Response(
+            '<h2 style="font-family:sans-serif;padding:20px">Sin conexión — abre la app mientras tengas internet la primera vez.</h2>',
+            { headers: { 'Content-Type': 'text/html' } }
+          ));
+      })
+    )
+  );
+});
+`;
+
+  // Register SW from a blob URL (works for file:// and http://)
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swURL = URL.createObjectURL(blob);
+
+  navigator.serviceWorker.register(swURL, { scope: './' })
+    .then(reg => {
+      console.log('[SW] Registrado — scope:', reg.scope);
+      // Cache the current page on first load
+      if ('caches' in window) {
+        caches.open(VERSION).then(cache => {
+          cache.add(location.href).catch(() => {});
+        });
+      }
+    })
+    .catch(err => console.warn('[SW] No se pudo registrar:', err));
+
+  // Notify user when app is ready to work offline
+  navigator.serviceWorker.ready.then(() => {
+    const pill = document.getElementById('offline-pill');
+    if (!navigator.onLine && pill) pill.classList.add('show');
+  });
+})();
+</script>
+</body>
+</html>
